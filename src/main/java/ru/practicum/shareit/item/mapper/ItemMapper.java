@@ -13,7 +13,7 @@ public class ItemMapper {
         );
     }
 
-    public static Item CombineItemWithItemDto(Item item, ItemDto itemDto) {
+    public static Item combineItemWithItemDto(Item item, ItemDto itemDto) {
         return new Item(
                 item.getId(),
                 item.getOwnerId(),

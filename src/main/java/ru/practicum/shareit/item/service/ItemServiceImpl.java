@@ -38,7 +38,7 @@ public class ItemServiceImpl implements ItemService {
             return null;
         }
         checkOwnerToItem(userId, itemBefore.getOwnerId());
-        Item itemAfter = ItemMapper.CombineItemWithItemDto(itemBefore, itemDto);
+        Item itemAfter = ItemMapper.combineItemWithItemDto(itemBefore, itemDto);
         return itemDao.updateItem(itemAfter);
     }
 

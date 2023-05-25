@@ -7,7 +7,7 @@ import ru.practicum.shareit.user.model.User;
 import java.util.*;
 
 @Component
-public class UserDaoImpl implements UserDao{
+public class UserDaoImpl implements UserDao {
     private Map<Integer, User> userStorage = new HashMap<>();
     private Set<String> emails = new HashSet<>();
 

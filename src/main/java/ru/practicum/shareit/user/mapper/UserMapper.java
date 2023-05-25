@@ -5,7 +5,7 @@ import ru.practicum.shareit.user.dto.UserDto;
 import ru.practicum.shareit.user.model.User;
 
 public class UserMapper {
-    public static User CombineUserWithUserDto(User user, UserDto userDto) {
+    public static User combineUserWithUserDto(User user, UserDto userDto) {
         return new User(
                 user.getId(),
                 StringUtils.hasText(userDto.getEmail()) ? userDto.getEmail() : user.getEmail(),
