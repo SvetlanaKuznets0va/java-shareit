@@ -1,6 +1,7 @@
 package ru.practicum.shareit.item.service;
 
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 import ru.practicum.shareit.exception.NotFoundException;
 import ru.practicum.shareit.item.dao.ItemDao;
 import ru.practicum.shareit.item.dto.ItemDto;
@@ -8,6 +9,9 @@ import ru.practicum.shareit.item.mapper.ItemMapper;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.item.validator.ItemValidator;
 import ru.practicum.shareit.user.service.UserService;
+
+import java.util.Collections;
+import java.util.List;
 
 @Service
 public class ItemServiceImpl implements ItemService {
@@ -41,6 +45,19 @@ public class ItemServiceImpl implements ItemService {
     @Override
     public Item findItemById(int itemId) {
         return itemDao.findItemById(itemId);
+    }
+
+    @Override
+    public List<Item> findItemsByUserId(int userId) {
+        return itemDao.findItemsByUserId(userId);
+    }
+
+    @Override
+    public List<Item> searchItemsByText(String text) {
+        if (!StringUtils.hasText(text)) {
+            return Collections.emptyList();
+        }
+        return itemDao.searchItemsByText(text);
     }
 
     private void checkOwner(int ownerId) {

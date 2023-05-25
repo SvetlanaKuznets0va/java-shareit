@@ -5,7 +5,9 @@ import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.model.Item;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Component
 public class ItemDaoImpl implements ItemDao {
@@ -34,5 +36,21 @@ public class ItemDaoImpl implements ItemDao {
             return itemStorage.get(itemId);
         }
         return null;
+    }
+
+    @Override
+    public List<Item> findItemsByUserId(int userId) {
+        return itemStorage.values().stream()
+                .filter(i -> i.getOwnerId() == userId)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<Item> searchItemsByText(String text) {
+        return itemStorage.values().stream()
+                .filter(Item::isAvailable)
+                .filter(i -> i.getName().toLowerCase().contains(text.toLowerCase())
+                        || i.getDescription().toLowerCase().contains(text.toLowerCase()))
+                .collect(Collectors.toList());
     }
 }
