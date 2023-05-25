@@ -49,7 +49,6 @@ public class UserDaoImpl implements UserDao{
         if (userStorage.containsKey(id)) {
             emails.remove(userStorage.get(id).getEmail());
             userStorage.remove(id);
-
         }
     }
 

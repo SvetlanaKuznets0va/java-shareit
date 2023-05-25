@@ -39,7 +39,6 @@ public class UserServiceImpl implements UserService {
         String updEmail = checkEmail(userBefore, userDto);
         User userAfter = UserMapper.CombineUserWithUserDto(userBefore, userDto);
         userAfter.setEmail(updEmail);
-
         return userDao.updateUser(userAfter);
     }
 
