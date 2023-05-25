@@ -1,11 +1,13 @@
 package ru.practicum.shareit.user.dao;
 
+import ru.practicum.shareit.user.dto.UserDto;
 import ru.practicum.shareit.user.model.User;
 
 import java.util.List;
+import java.util.Set;
 
 public interface UserDao {
-    User addUser(User user);
+    User addUser(UserDto userDto);
 
     List<User> getAllUsers();
 
@@ -14,4 +16,6 @@ public interface UserDao {
     User findUserById(int id);
 
     void deleteUserById(int id);
+
+    Set<String> getEmails();
 }

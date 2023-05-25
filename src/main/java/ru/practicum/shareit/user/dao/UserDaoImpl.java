@@ -1,6 +1,7 @@
 package ru.practicum.shareit.user.dao;
 
 import org.springframework.stereotype.Component;
+import ru.practicum.shareit.user.dto.UserDto;
 import ru.practicum.shareit.user.model.User;
 
 import java.util.*;
@@ -13,11 +14,11 @@ public class UserDaoImpl implements UserDao{
     private static int id = 0;
 
     @Override
-    public User addUser(User user) {
-        if (emails.contains(user.getEmail())) {
+    public User addUser(UserDto userDto) {
+        if (emails.contains(userDto.getEmail())) {
             throw new RuntimeException("duplicate email");
         }
-        user.setId(++id);
+        User user = new User(++id, userDto.getEmail(), userDto.getName());
         userStorage.put(user.getId(), user);
         emails.add(user.getEmail());
         return user;
@@ -31,34 +32,8 @@ public class UserDaoImpl implements UserDao{
 
     @Override
     public User updateUser(User user) {
-        int id = user.getId();
-        if (userStorage.containsKey(id)) {
-            User u = userStorage.get(id);
-            String oldEmail = u.getEmail();
-            switch (checkUser(user)) {
-                case "Full" :
-                    userStorage.put(id, user);
-                    u = userStorage.get(id);
-                    emails.remove(oldEmail);
-                    emails.add(user.getEmail());
-                    break;
-                case "FillName" :
-                    u.setName(user.getName());
-                    userStorage.put(id, u);
-                    break;
-                case "FillEmail" :
-                    u.setEmail(user.getEmail());
-                    userStorage.put(id, u);
-                    emails.remove(oldEmail);
-                    emails.add(u.getEmail());
-                    break;
-                default :
-                    break;
-
-            }
-            return u;
-        }
-        return null;
+        userStorage.put(user.getId(), user);
+        return user;
     }
 
     @Override
@@ -78,19 +53,8 @@ public class UserDaoImpl implements UserDao{
         }
     }
 
-    private String checkUser(User user) {
-        if (emails.contains(user.getEmail()) && !userStorage.get(user.getId()).getEmail().equals(user.getEmail())) {
-            throw new RuntimeException("duplicate email");
-        }
-        if (user.getEmail() == null && user.getName() != null) {
-            return "FillName";
-        }
-        if (user.getEmail() != null && user.getName() == null) {
-            return "FillEmail";
-        }
-        if (user.getEmail() == null && user.getName() == null) {
-            return "Empty";
-        }
-        return "Full";
+    @Override
+    public Set<String> getEmails() {
+        return emails;
     }
 }
