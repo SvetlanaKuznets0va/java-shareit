@@ -9,6 +9,7 @@ import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.validator.UserValidator;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class UserServiceImpl implements UserService {
@@ -20,31 +21,34 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public User addUser(UserDto userDto) {
+    public UserDto addUser(UserDto userDto) {
         UserValidator.validateUser(userDto);
-        return userDao.addUser(userDto);
+        User user = UserMapper.toUserWithoutId(userDto);
+        return UserMapper.toUserDto(userDao.addUser(user));
     }
 
     @Override
-    public List<User> getAllUsers() {
-        return userDao.getAllUsers();
+    public List<UserDto> getAllUsers() {
+        return userDao.getAllUsers().stream()
+                .map(UserMapper::toUserDto)
+                .collect(Collectors.toList());
     }
 
     @Override
-    public User updateUser(UserDto userDto, int id) {
-        User userBefore = findUserById(id);
+    public UserDto updateUser(UserDto userDto, int id) {
+        User userBefore = UserMapper.toUser(findUserById(id));
         if (userBefore == null) {
             return null;
         }
         String updEmail = checkEmail(userBefore, userDto);
         User userAfter = UserMapper.combineUserWithUserDto(userBefore, userDto);
         userAfter.setEmail(updEmail);
-        return userDao.updateUser(userAfter);
+        return UserMapper.toUserDto(userDao.updateUser(userAfter));
     }
 
     @Override
-    public User findUserById(int id) {
-        return userDao.findUserById(id);
+    public UserDto findUserById(int id) {
+        return UserMapper.toUserDto(userDao.findUserById(id));
     }
 
     @Override
@@ -65,5 +69,10 @@ public class UserServiceImpl implements UserService {
             return userDto.getEmail();
         }
         return null;
+    }
+
+    @Override
+    public boolean isExist(int id) {
+        return findUserById(id) != null;
     }
 }

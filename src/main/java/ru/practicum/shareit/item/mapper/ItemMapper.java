@@ -7,6 +7,8 @@ import ru.practicum.shareit.item.model.Item;
 public class ItemMapper {
     public static ItemDto toItemDto(Item item) {
         return new ItemDto(
+                item.getId(),
+                item.getOwnerId(),
                 item.getName(),
                 item.getDescription(),
                 item.isAvailable()
@@ -21,5 +23,19 @@ public class ItemMapper {
                 StringUtils.hasText(itemDto.getDescription()) ? itemDto.getDescription() : item.getDescription(),
                 itemDto.getAvailable() != null ? itemDto.getAvailable() : item.isAvailable()
         );
+    }
+
+    public static Item toItemWithoutId(ItemDto itemDto, int userId) {
+        return new Item(
+                userId,
+                itemDto.getName(),
+                itemDto.getDescription(),
+                itemDto.getAvailable()
+        );
+    }
+
+    public static Item toItem(ItemDto itemDto) {
+        return itemDto == null ? null : new Item(itemDto.getId(), itemDto.getOwnerId(),
+                itemDto.getName(), itemDto.getDescription(), itemDto.getAvailable());
     }
 }

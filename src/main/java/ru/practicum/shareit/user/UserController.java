@@ -20,17 +20,17 @@ public class UserController {
     }
 
     @RequestMapping(method = RequestMethod.POST)
-    public User addUser(@Valid @RequestBody UserDto userDto) {
+    public UserDto addUser(@Valid @RequestBody UserDto userDto) {
         return userService.addUser(userDto);
     }
 
     @RequestMapping(method = RequestMethod.GET)
-    public List<User> getAllUsers() {
+    public List<UserDto> getAllUsers() {
         return userService.getAllUsers();
     }
 
     @PatchMapping("/{id}")
-    public User updateUser(@Valid @RequestBody UserDto userDto, @PathVariable int id) {
+    public UserDto updateUser(@Valid @RequestBody UserDto userDto, @PathVariable int id) {
         return userService.updateUser(userDto, id);
     }
 
@@ -40,7 +40,7 @@ public class UserController {
     }
 
     @GetMapping("/{id}")
-    public User findUserById(@PathVariable int id) {
+    public UserDto findUserById(@PathVariable int id) {
         return userService.findUserById(id);
     }
 }

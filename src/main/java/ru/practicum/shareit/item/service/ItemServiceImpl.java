@@ -12,6 +12,7 @@ import ru.practicum.shareit.user.service.UserService;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class ItemServiceImpl implements ItemService {
@@ -24,44 +25,49 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
-    public Item addItem(ItemDto itemDto, int userId) {
+    public ItemDto addItem(ItemDto itemDto, int userId) {
         checkOwner(userId);
         ItemValidator.validateItemDto(itemDto);
-        return itemDao.addItem(itemDto, userId);
+        Item item = ItemMapper.toItemWithoutId(itemDto, userId);
+        return ItemMapper.toItemDto(itemDao.addItem(item));
     }
 
     @Override
-    public Item updateItem(ItemDto itemDto, int userId, int itemId) {
+    public ItemDto updateItem(ItemDto itemDto, int userId, int itemId) {
         checkOwner(userId);
-        Item itemBefore = findItemById(itemId);
+        Item itemBefore = ItemMapper.toItem(findItemById(itemId));
         if (itemBefore == null) {
             return null;
         }
         checkOwnerToItem(userId, itemBefore.getOwnerId());
         Item itemAfter = ItemMapper.combineItemWithItemDto(itemBefore, itemDto);
-        return itemDao.updateItem(itemAfter);
+        return ItemMapper.toItemDto(itemDao.updateItem(itemAfter));
     }
 
     @Override
-    public Item findItemById(int itemId) {
-        return itemDao.findItemById(itemId);
+    public ItemDto findItemById(int itemId) {
+        return ItemMapper.toItemDto(itemDao.findItemById(itemId));
     }
 
     @Override
-    public List<Item> findItemsByUserId(int userId) {
-        return itemDao.findItemsByUserId(userId);
+    public List<ItemDto> findItemsByUserId(int userId) {
+        return itemDao.findItemsByUserId(userId).stream()
+                .map(ItemMapper::toItemDto)
+                .collect(Collectors.toList());
     }
 
     @Override
-    public List<Item> searchItemsByText(String text) {
+    public List<ItemDto> searchItemsByText(String text) {
         if (!StringUtils.hasText(text)) {
             return Collections.emptyList();
         }
-        return itemDao.searchItemsByText(text);
+        return itemDao.searchItemsByText(text).stream()
+                .map(ItemMapper::toItemDto)
+                .collect(Collectors.toList());
     }
 
     private void checkOwner(int ownerId) {
-        if (userService.findUserById(ownerId) == null) {
+        if (!userService.isExist(ownerId)) {
             throw new NotFoundException("Такого владельца нет");
         }
     }

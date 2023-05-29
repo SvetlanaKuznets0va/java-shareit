@@ -1,26 +1,30 @@
 package ru.practicum.shareit.user.dao;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
-import ru.practicum.shareit.user.dto.UserDto;
 import ru.practicum.shareit.user.model.User;
 
 import java.util.*;
 
 @Component
 public class UserDaoImpl implements UserDao {
+    private static final Logger log = LoggerFactory.getLogger(UserDaoImpl.class);
+
     private Map<Integer, User> userStorage = new HashMap<>();
     private Set<String> emails = new HashSet<>();
 
     private static int id = 0;
 
     @Override
-    public User addUser(UserDto userDto) {
-        if (emails.contains(userDto.getEmail())) {
+    public User addUser(User user) {
+        if (emails.contains(user.getEmail())) {
             throw new RuntimeException("duplicate email");
         }
-        User user = new User(++id, userDto.getEmail(), userDto.getName());
+        user.setId(++id);
         userStorage.put(user.getId(), user);
         emails.add(user.getEmail());
+        log.info("User with id: " + id + " added.");
         return user;
     }
 
@@ -33,6 +37,7 @@ public class UserDaoImpl implements UserDao {
     @Override
     public User updateUser(User user) {
         userStorage.put(user.getId(), user);
+        log.info("User with id: " + user.getId() + " updated.");
         return user;
     }
 
@@ -49,6 +54,7 @@ public class UserDaoImpl implements UserDao {
         if (userStorage.containsKey(id)) {
             emails.remove(userStorage.get(id).getEmail());
             userStorage.remove(id);
+            log.info("User with id: " + id + " deleted.");
         }
     }
 

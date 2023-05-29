@@ -1,7 +1,8 @@
 package ru.practicum.shareit.item.dao;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
-import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.model.Item;
 
 import java.util.HashMap;
@@ -11,13 +12,16 @@ import java.util.stream.Collectors;
 
 @Component
 public class ItemDaoImpl implements ItemDao {
+    private static final Logger log = LoggerFactory.getLogger(ItemDaoImpl.class);
+
     Map<Integer, Item> itemStorage = new HashMap<>();
-    private static int id = 0;
+    private int id = 0;
 
     @Override
-    public Item addItem(ItemDto itemDto, int userId) {
-        Item item = new Item(++id, userId, itemDto.getName(), itemDto.getDescription(), itemDto.getAvailable());
+    public Item addItem(Item item) {
+        item.setId(++id);
         itemStorage.put(item.getId(), item);
+        log.info("Item with id: " + id + " added.");
         return item;
     }
 
@@ -25,6 +29,7 @@ public class ItemDaoImpl implements ItemDao {
     public Item updateItem(Item item) {
         if (itemStorage.containsKey(item.getId())) {
             itemStorage.put(item.getId(), item);
+            log.info("Item with id: " + item.getId() + " updated.");
             return item;
         }
         return null;

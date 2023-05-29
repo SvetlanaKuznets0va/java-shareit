@@ -8,6 +8,8 @@ import ru.practicum.shareit.item.service.ItemService;
 
 import java.util.List;
 
+import static ru.practicum.shareit.constants.Constatnts.*;
+
 @RestController
 @RequestMapping("/items")
 public class ItemController {
@@ -19,29 +21,29 @@ public class ItemController {
     }
 
     @PostMapping()
-    public Item addItem(@RequestBody ItemDto itemDto, @RequestHeader(name = "X-Sharer-User-Id") int userId) {
+    public ItemDto addItem(@RequestBody ItemDto itemDto, @RequestHeader(name = USER_ID) int userId) {
         return itemService.addItem(itemDto, userId);
     }
 
     @PatchMapping("/{itemId}")
-    public Item updateItem(@RequestBody ItemDto itemDto,
-                           @RequestHeader(name = "X-Sharer-User-Id") int userId,
+    public ItemDto updateItem(@RequestBody ItemDto itemDto,
+                           @RequestHeader(name = USER_ID) int userId,
                            @PathVariable int itemId) {
         return itemService.updateItem(itemDto, userId, itemId);
     }
 
     @GetMapping("/{itemId}")
-    public Item getItemById(@PathVariable int itemId) {
+    public ItemDto getItemById(@PathVariable int itemId) {
         return itemService.findItemById(itemId);
     }
 
     @GetMapping()
-    public List<Item> getItemByUserId(@RequestHeader(name = "X-Sharer-User-Id")  int userId) {
+    public List<ItemDto> getItemByUserId(@RequestHeader(name = USER_ID)  int userId) {
         return itemService.findItemsByUserId(userId);
     }
 
     @GetMapping("/search")
-    public List<Item> searchItemsByText(@RequestParam String text) {
+    public List<ItemDto> searchItemsByText(@RequestParam String text) {
         return itemService.searchItemsByText(text);
     }
 }
