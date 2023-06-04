@@ -26,10 +26,10 @@ public class ItemServiceImpl implements ItemService {
 
     @Override
     public ItemDto addItem(ItemDto itemDto, int userId) {
-        checkOwner(userId);
         ItemValidator.validateItemDto(itemDto);
+        checkOwner(userId);
         Item item = ItemMapper.toItemWithoutId(itemDto, userId);
-        return ItemMapper.toItemDto(itemDao.addItem(item));
+            return ItemMapper.toItemDto(itemDao.save(item));
     }
 
     @Override
@@ -41,17 +41,18 @@ public class ItemServiceImpl implements ItemService {
         }
         checkOwnerToItem(userId, itemBefore.getOwnerId());
         Item itemAfter = ItemMapper.combineItemWithItemDto(itemBefore, itemDto);
-        return ItemMapper.toItemDto(itemDao.updateItem(itemAfter));
+        return ItemMapper.toItemDto(itemDao.save(itemAfter));
     }
 
     @Override
     public ItemDto findItemById(int itemId) {
-        return ItemMapper.toItemDto(itemDao.findItemById(itemId));
+        return ItemMapper.toItemDto(itemDao.findById(itemId)
+                .orElseThrow(() -> new NotFoundException("Вещь с таким id не найдена")));
     }
 
     @Override
     public List<ItemDto> findItemsByUserId(int userId) {
-        return itemDao.findItemsByUserId(userId).stream()
+        return itemDao.findByOwnerId(userId).stream()
                 .map(ItemMapper::toItemDto)
                 .collect(Collectors.toList());
     }
@@ -61,7 +62,8 @@ public class ItemServiceImpl implements ItemService {
         if (!StringUtils.hasText(text)) {
             return Collections.emptyList();
         }
-        return itemDao.searchItemsByText(text).stream()
+        return itemDao.findByNameContainingIgnoreCaseOrDescriptionContainingIgnoreCase(text, text).stream()
+                .filter(Item::isAvailable)
                 .map(ItemMapper::toItemDto)
                 .collect(Collectors.toList());
     }
