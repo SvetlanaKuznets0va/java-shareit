@@ -9,11 +9,11 @@ public interface UserService {
 
     List<UserDto> getAllUsers();
 
-    UserDto updateUser(UserDto userDto, int id);
+    UserDto updateUser(UserDto userDto, long id);
 
-    UserDto findUserById(int id);
+    UserDto findUserById(long id);
 
-    void deleteUserById(int id);
+    void deleteUserById(long id);
 
-    boolean isExist(int id);
+    boolean isExist(long id);
 }

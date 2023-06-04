@@ -2,6 +2,7 @@ package ru.practicum.shareit.user.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import ru.practicum.shareit.exception.NotFoundException;
 import ru.practicum.shareit.user.dao.UserDao;
 import ru.practicum.shareit.user.dto.UserDto;
 import ru.practicum.shareit.user.mapper.UserMapper;
@@ -24,55 +25,42 @@ public class UserServiceImpl implements UserService {
     public UserDto addUser(UserDto userDto) {
         UserValidator.validateUser(userDto);
         User user = UserMapper.toUserWithoutId(userDto);
-        return UserMapper.toUserDto(userDao.addUser(user));
+        return UserMapper.toUserDto(userDao.save(user));
     }
 
     @Override
     public List<UserDto> getAllUsers() {
-        return userDao.getAllUsers().stream()
+        return userDao.findAll().stream()
                 .map(UserMapper::toUserDto)
                 .collect(Collectors.toList());
     }
 
     @Override
-    public UserDto updateUser(UserDto userDto, int id) {
+    public UserDto updateUser(UserDto userDto, long id) {
         User userBefore = UserMapper.toUser(findUserById(id));
         if (userBefore == null) {
             return null;
         }
-        String updEmail = checkEmail(userBefore, userDto);
         User userAfter = UserMapper.combineUserWithUserDto(userBefore, userDto);
-        userAfter.setEmail(updEmail);
-        return UserMapper.toUserDto(userDao.updateUser(userAfter));
+        return UserMapper.toUserDto(userDao.save(userAfter));
     }
 
     @Override
-    public UserDto findUserById(int id) {
-        return UserMapper.toUserDto(userDao.findUserById(id));
+    public UserDto findUserById(long id) {
+        try {
+            return UserMapper.toUserDto(userDao.findById(id).get());
+        } catch (Exception e) {
+            throw new NotFoundException("Такой пользователь не найден");
+        }
     }
 
     @Override
-    public void deleteUserById(int id) {
-        userDao.deleteUserById(id);
-    }
-
-    private String checkEmail(User user, UserDto userDto) {
-        if (userDao.getEmails().contains(userDto.getEmail()) && !user.getEmail().equals(userDto.getEmail())) {
-            throw new RuntimeException("duplicate email");
-        }
-        if (user.getEmail().equals(userDto.getEmail()) || userDto.getEmail() == null) {
-            return user.getEmail();
-        }
-        if (userDto.getEmail() != null) {
-            userDao.getEmails().remove(user.getEmail());
-            userDao.getEmails().add(userDto.getEmail());
-            return userDto.getEmail();
-        }
-        return null;
+    public void deleteUserById(long id) {
+        userDao.deleteById(id);
     }
 
     @Override
-    public boolean isExist(int id) {
+    public boolean isExist(long id) {
         return findUserById(id) != null;
     }
 }
