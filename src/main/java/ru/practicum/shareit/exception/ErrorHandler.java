@@ -27,4 +27,10 @@ public class ErrorHandler {
     public Map<String, String> handleException(final Exception e) {
         return Map.of("Exception", e.getMessage());
     }
+
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    public Map<String, String> handleException(final InvalidStatusException e) {
+        return Map.of("error", e.getMessage());
+    }
 }

@@ -79,4 +79,9 @@ public class ItemServiceImpl implements ItemService {
             throw new NotFoundException("Такого владельца нет");
         }
     }
+
+    @Override
+    public boolean isExistItem(int itemId) {
+        return findItemById(itemId) != null;
+    }
 }

@@ -14,4 +14,6 @@ public interface ItemService {
     List<ItemDto> findItemsByUserId(int userId);
 
     List<ItemDto> searchItemsByText(String text);
+
+    boolean isExistItem(int itemId);
 }
