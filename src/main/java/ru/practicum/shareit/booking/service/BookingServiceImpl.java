@@ -89,10 +89,10 @@ public class BookingServiceImpl implements BookingService {
                 result = bookingDao.findCurrentByBooker(userId);
                 break;
             case WAITING:
-                result = bookingDao.findWaitingOrRejectedByBooker(userId, State.WAITING);
+                result = bookingDao.findWaitingOrRejectedByBooker(userId, Status.WAITING);
                 break;
             case REJECTED:
-                result = bookingDao.findWaitingOrRejectedByBooker(userId, State.REJECTED);
+                result = bookingDao.findWaitingOrRejectedByBooker(userId, Status.REJECTED);
                 break;
         }
 
@@ -122,10 +122,10 @@ public class BookingServiceImpl implements BookingService {
                 result = bookingDao.findCurrentByOwner(ownerId);
                 break;
             case WAITING:
-                result = bookingDao.findWaitingOrRejectedByOwner(ownerId, State.WAITING);
+                result = bookingDao.findWaitingOrRejectedByOwner(ownerId, Status.WAITING);
                 break;
             case REJECTED:
-                result = bookingDao.findWaitingOrRejectedByOwner(ownerId, State.REJECTED);
+                result = bookingDao.findWaitingOrRejectedByOwner(ownerId, Status.REJECTED);
                 break;
         }
 

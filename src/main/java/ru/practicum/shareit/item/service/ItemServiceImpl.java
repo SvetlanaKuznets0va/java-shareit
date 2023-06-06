@@ -1,10 +1,14 @@
 package ru.practicum.shareit.item.service;
 
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
+import ru.practicum.shareit.booking.dao.BookingDao;
+import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.exception.NotFoundException;
 import ru.practicum.shareit.item.dao.ItemDao;
 import ru.practicum.shareit.item.dto.ItemDto;
+import ru.practicum.shareit.item.dto.ItemDtoPers;
 import ru.practicum.shareit.item.mapper.ItemMapper;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.item.validator.ItemValidator;
@@ -17,10 +21,12 @@ import java.util.stream.Collectors;
 @Service
 public class ItemServiceImpl implements ItemService {
     private ItemDao itemDao;
+    private BookingDao bookingDao;
     private UserService userService;
 
-    public ItemServiceImpl(ItemDao itemDao, UserService userService) {
+    public ItemServiceImpl(ItemDao itemDao, BookingDao bookingDao, UserService userService) {
         this.itemDao = itemDao;
+        this.bookingDao = bookingDao;
         this.userService = userService;
     }
 
@@ -51,9 +57,35 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
-    public List<ItemDto> findItemsByUserId(int userId) {
-        return itemDao.findByOwnerId(userId).stream()
-                .map(ItemMapper::toItemDto)
+    public ItemDtoPers findItemByIdAndUserId(Integer ownerId, int itemId) {
+        Item item = itemDao.findById(itemId).orElseThrow(() -> new NotFoundException("Вещь с таким id не найдена"));
+
+        Booking last = null;
+        Booking next = null;
+        if (ownerId != null && item.getOwnerId() == ownerId) {
+            List<Booking> lasts = bookingDao.findBookingWithLastNearestDateByItemId(itemId);
+            last = CollectionUtils.isEmpty(lasts) ? null : lasts.stream().findFirst().get();
+            List<Booking> nexts = bookingDao.findBookingWithNextNearestDateByItemId(itemId);
+            next = CollectionUtils.isEmpty(nexts) ? null : nexts.stream().findFirst().get();
+
+        }
+        return ItemMapper.toItemDtoPers(item, last, next);
+    }
+
+    @Override
+    public List<ItemDtoPers> findItemsByUserId(int userId) {
+        return itemDao.findItemByOwnerIdOrderById(userId).stream()
+                .map(item -> {
+                    Booking last = null;
+                    Booking next = null;
+                    if (item.getOwnerId() == userId) {
+                        List<Booking> lasts = bookingDao.findBookingWithLastNearestDateByItemId(item.getId());
+                        last = CollectionUtils.isEmpty(lasts) ? null : lasts.stream().findFirst().get();
+                        List<Booking> nexts = bookingDao.findBookingWithNextNearestDateByItemId(item.getId());
+                        next = CollectionUtils.isEmpty(nexts) ? null : nexts.stream().findFirst().get();
+                    }
+                    return ItemMapper.toItemDtoPers(item, last, next);
+                })
                 .collect(Collectors.toList());
     }
 

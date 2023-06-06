@@ -8,7 +8,7 @@ import java.util.List;
 
 @Repository
 public interface ItemDao extends JpaRepository<Item, Integer> {
-    List<Item> findByOwnerId(int ownerId);
+    List<Item> findItemByOwnerIdOrderById(int ownerId);
 
     List<Item> findByNameContainingIgnoreCaseOrDescriptionContainingIgnoreCase(String text1, String text2);
 }

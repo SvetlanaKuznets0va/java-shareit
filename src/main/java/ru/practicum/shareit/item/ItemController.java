@@ -3,11 +3,12 @@ package ru.practicum.shareit.item;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.item.dto.ItemDto;
+import ru.practicum.shareit.item.dto.ItemDtoPers;
 import ru.practicum.shareit.item.service.ItemService;
 
 import java.util.List;
 
-import static ru.practicum.shareit.constants.Constatnts.*;
+import static ru.practicum.shareit.constants.Constatnts.USER_ID;
 
 @RestController
 @RequestMapping("/items")
@@ -32,12 +33,12 @@ public class ItemController {
     }
 
     @GetMapping("/{itemId}")
-    public ItemDto getItemById(@PathVariable int itemId) {
-        return itemService.findItemById(itemId);
+    public ItemDtoPers getItemById(@RequestHeader(required = false, name = USER_ID) Integer userId, @PathVariable int itemId) {
+        return itemService.findItemByIdAndUserId(userId, itemId);
     }
 
     @GetMapping()
-    public List<ItemDto> getItemByUserId(@RequestHeader(name = USER_ID)  int userId) {
+    public List<ItemDtoPers> getItemByUserId(@RequestHeader(name = USER_ID)  int userId) {
         return itemService.findItemsByUserId(userId);
     }
 

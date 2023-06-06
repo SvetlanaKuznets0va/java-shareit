@@ -1,7 +1,10 @@
 package ru.practicum.shareit.item.mapper;
 
 import org.springframework.util.StringUtils;
+import ru.practicum.shareit.booking.mapper.BookingMapper;
+import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.item.dto.ItemDto;
+import ru.practicum.shareit.item.dto.ItemDtoPers;
 import ru.practicum.shareit.item.model.Item;
 
 public class ItemMapper {
@@ -12,6 +15,18 @@ public class ItemMapper {
                 item.getName(),
                 item.getDescription(),
                 item.isAvailable()
+        );
+    }
+
+    public static ItemDtoPers toItemDtoPers(Item item, Booking last, Booking next) {
+        return new ItemDtoPers(
+                item.getId(),
+                item.getOwnerId(),
+                item.getName(),
+                item.getDescription(),
+                item.isAvailable(),
+                last == null ? null : BookingMapper.bookingDto(last),
+                next == null ? null : BookingMapper.bookingDto(next)
         );
     }
 
