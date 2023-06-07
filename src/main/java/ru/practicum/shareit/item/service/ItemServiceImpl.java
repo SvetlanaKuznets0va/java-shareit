@@ -138,10 +138,10 @@ public class ItemServiceImpl implements ItemService {
         Optional<Booking> booking = userBookings.stream()
                 .filter(b -> b.getEnd().isBefore(LocalDateTime.now()))
                 .filter(b -> b.getStatus() != Status.REJECTED)
-                .filter(b -> b.getItem().getId() == itemId )
+                .filter(b -> b.getItem().getId() == itemId)
                 .findFirst();
 
-        if(booking.isPresent()) {
+        if (booking.isPresent()) {
             Comment comment = CommentMapper.toComment(booking.get(), text);
             return CommentMapper.toCommentDto(commentDao.save(comment), booking.get().getBooker().getName());
         }
