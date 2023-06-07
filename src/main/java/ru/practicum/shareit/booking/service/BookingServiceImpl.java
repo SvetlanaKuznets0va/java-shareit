@@ -34,7 +34,7 @@ public class BookingServiceImpl implements BookingService {
     }
 
     @Override
-    public BookingDtoResp add(BookingDto bookingDto, long userId) {
+    public BookingDtoResp add(BookingDto bookingDto, int userId) {
         BookingValidator.validateBookingDto(bookingDto);
         Item item = getItem(bookingDto.getItemId());
         if (item.getOwnerId() == userId) {
@@ -142,7 +142,7 @@ public class BookingServiceImpl implements BookingService {
         }
     }
 
-    private Booking getBooking(int bookingId, long userId) {
+    private Booking getBooking(int bookingId, int userId) {
         return bookingDao.findBookingByIdAndBookerId(bookingId, userId).orElseThrow(() -> new NotFoundException("Запись не найдена"));
     }
 
@@ -154,7 +154,7 @@ public class BookingServiceImpl implements BookingService {
         return item;
     }
 
-    private User getUser(long userId) {
+    private User getUser(int userId) {
         return userDao.findById(userId).orElseThrow(() -> new NotFoundException("Такой пользователь не найден"));
     }
 }

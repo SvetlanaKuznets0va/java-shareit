@@ -36,7 +36,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public UserDto updateUser(UserDto userDto, long id) {
+    public UserDto updateUser(UserDto userDto, int id) {
         User userBefore = UserMapper.toUser(findUserById(id));
         if (userBefore == null) {
             return null;
@@ -46,7 +46,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public UserDto findUserById(long id) {
+    public UserDto findUserById(int id) {
         try {
             return UserMapper.toUserDto(userDao.findById(id).get());
         } catch (Exception e) {
@@ -55,12 +55,12 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public void deleteUserById(long id) {
+    public void deleteUserById(int id) {
         userDao.deleteById(id);
     }
 
     @Override
-    public boolean isExist(long id) {
+    public boolean isExist(int id) {
         return findUserById(id) != null;
     }
 }

@@ -16,36 +16,36 @@ public interface BookingDao  extends JpaRepository<Booking, Integer> {
             "from Booking as b "+
             "join fetch b.item as i join fetch b.booker as u " +
             "where b.id = ?1 and (u.id = ?2 or i.ownerId = ?2)")
-    Optional<Booking> findBookingByIdAndBookerId(int bookingId, long bookerId);
+    Optional<Booking> findBookingByIdAndBookerId(int bookingId, int bookerId);
     @Query("select b " +
             "from Booking as b "+
             "join b.booker as u " +
             "where u.id = ?1  order by b.start desc ")
-    List<Booking> findAllByBooker(long bookerId);
+    List<Booking> findAllByBooker(int bookerId);
 
     @Query("select b " +
             "from Booking as b "+
             "join b.booker as u " +
             "where u.id = ?1 and (b.start > CURRENT_TIMESTAMP or b.end > CURRENT_TIMESTAMP) order by b.start desc ")
-    List<Booking> findFutureByBooker(long bookerId);
+    List<Booking> findFutureByBooker(int bookerId);
 
     @Query("select b " +
             "from Booking as b "+
             "join b.booker as u " +
             "where u.id = ?1 and b.end < CURRENT_TIMESTAMP order by b.start desc ")
-    List<Booking> findPastByBooker(long bookerId);
+    List<Booking> findPastByBooker(int bookerId);
 
     @Query("select b " +
             "from Booking as b "+
             "join b.booker as u " +
             "where u.id = ?1 and b.start > CURRENT_TIMESTAMP and b.end < CURRENT_TIMESTAMP order by b.start desc ")
-    List<Booking> findCurrentByBooker(long bookerId);
+    List<Booking> findCurrentByBooker(int bookerId);
 
     @Query("select b " +
             "from Booking as b "+
             "join b.booker as u " +
             "where u.id = ?1 and b.status = ?2 order by b.start desc ")
-    List<Booking> findWaitingOrRejectedByBooker(long bookerId, Status state);
+    List<Booking> findWaitingOrRejectedByBooker(int bookerId, Status state);
 
     @Query("select b " +
             "from Booking as b "+
