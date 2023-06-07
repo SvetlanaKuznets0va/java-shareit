@@ -5,28 +5,38 @@ import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 import ru.practicum.shareit.booking.dao.BookingDao;
 import ru.practicum.shareit.booking.model.Booking;
+import ru.practicum.shareit.constants.Status;
 import ru.practicum.shareit.exception.NotFoundException;
+import ru.practicum.shareit.exception.ValidationException;
+import ru.practicum.shareit.item.dao.CommentDao;
 import ru.practicum.shareit.item.dao.ItemDao;
+import ru.practicum.shareit.item.dto.CommentDto;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.dto.ItemDtoPers;
+import ru.practicum.shareit.item.mapper.CommentMapper;
 import ru.practicum.shareit.item.mapper.ItemMapper;
+import ru.practicum.shareit.item.model.Comment;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.item.validator.ItemValidator;
 import ru.practicum.shareit.user.service.UserService;
 
+import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
 public class ItemServiceImpl implements ItemService {
     private ItemDao itemDao;
     private BookingDao bookingDao;
+    private CommentDao commentDao;
     private UserService userService;
 
-    public ItemServiceImpl(ItemDao itemDao, BookingDao bookingDao, UserService userService) {
+    public ItemServiceImpl(ItemDao itemDao, BookingDao bookingDao, CommentDao commentDao, UserService userService) {
         this.itemDao = itemDao;
         this.bookingDao = bookingDao;
+        this.commentDao = commentDao;
         this.userService = userService;
     }
 
@@ -35,7 +45,7 @@ public class ItemServiceImpl implements ItemService {
         ItemValidator.validateItemDto(itemDto);
         checkOwner(userId);
         Item item = ItemMapper.toItemWithoutId(itemDto, userId);
-            return ItemMapper.toItemDto(itemDao.save(item));
+        return ItemMapper.toItemDto(itemDao.save(item));
     }
 
     @Override
@@ -52,13 +62,12 @@ public class ItemServiceImpl implements ItemService {
 
     @Override
     public ItemDto findItemById(int itemId) {
-        return ItemMapper.toItemDto(itemDao.findById(itemId)
-                .orElseThrow(() -> new NotFoundException("Вещь с таким id не найдена")));
+        return ItemMapper.toItemDto(getItem(itemId));
     }
 
     @Override
     public ItemDtoPers findItemByIdAndUserId(Integer ownerId, int itemId) {
-        Item item = itemDao.findById(itemId).orElseThrow(() -> new NotFoundException("Вещь с таким id не найдена"));
+        Item item = getItem(itemId);
 
         Booking last = null;
         Booking next = null;
@@ -66,10 +75,13 @@ public class ItemServiceImpl implements ItemService {
             List<Booking> lasts = bookingDao.findBookingWithLastNearestDateByItemId(itemId);
             last = CollectionUtils.isEmpty(lasts) ? null : lasts.stream().findFirst().get();
             List<Booking> nexts = bookingDao.findBookingWithNextNearestDateByItemId(itemId);
-            next = CollectionUtils.isEmpty(nexts) ? null : nexts.stream().findFirst().get();
+            next = CollectionUtils.isEmpty(nexts) ? null :
+                    nexts.stream()
+                            .filter(i -> i.getStatus() != Status.REJECTED)
+                            .findFirst().orElse(null);
 
         }
-        return ItemMapper.toItemDtoPers(item, last, next);
+        return ItemMapper.toItemDtoPers(item, last, next, getListCommentsDto(itemId));
     }
 
     @Override
@@ -84,7 +96,7 @@ public class ItemServiceImpl implements ItemService {
                         List<Booking> nexts = bookingDao.findBookingWithNextNearestDateByItemId(item.getId());
                         next = CollectionUtils.isEmpty(nexts) ? null : nexts.stream().findFirst().get();
                     }
-                    return ItemMapper.toItemDtoPers(item, last, next);
+                    return ItemMapper.toItemDtoPers(item, last, next, getListCommentsDto(item.getId()));
                 })
                 .collect(Collectors.toList());
     }
@@ -115,5 +127,37 @@ public class ItemServiceImpl implements ItemService {
     @Override
     public boolean isExistItem(int itemId) {
         return findItemById(itemId) != null;
+    }
+
+    @Override
+    public CommentDto addComment(int userId, int itemId, CommentDto text) {
+        if (!StringUtils.hasText(text.getText())) {
+            throw new ValidationException("Пустой комментарий");
+        }
+        List<Booking> userBookings = bookingDao.findAllByBooker(userId);
+        Optional<Booking> booking = userBookings.stream()
+                .filter(b -> b.getEnd().isBefore(LocalDateTime.now()))
+                .filter(b -> b.getStatus() != Status.REJECTED)
+                .filter(b -> b.getItem().getId() == itemId )
+                .findFirst();
+
+        if(booking.isPresent()) {
+            Comment comment = CommentMapper.toComment(booking.get(), text);
+            return CommentMapper.toCommentDto(commentDao.save(comment), booking.get().getBooker().getName());
+        }
+        throw new ValidationException("Вещь не была в аренде");
+    }
+
+    private Item getItem(int itemId) {
+        return itemDao.findById(itemId).orElseThrow(() -> new NotFoundException("Вещь с таким id не найдена"));
+    }
+
+    private List<CommentDto> getListCommentsDto(int itemId) {
+        return commentDao.findCommentsByItemId(itemId).stream()
+                .map(comment -> {
+                    String name = userService.findUserById(comment.getAuthorName()).getName();
+                    return CommentMapper.toCommentDto(comment, name);
+                })
+                .collect(Collectors.toList());
     }
 }

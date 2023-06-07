@@ -1,5 +1,6 @@
 package ru.practicum.shareit.item.service;
 
+import ru.practicum.shareit.item.dto.CommentDto;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.dto.ItemDtoPers;
 
@@ -19,4 +20,6 @@ public interface ItemService {
     List<ItemDto> searchItemsByText(String text);
 
     boolean isExistItem(int itemId);
+
+    CommentDto addComment(int userId, int itemId, CommentDto text);
 }

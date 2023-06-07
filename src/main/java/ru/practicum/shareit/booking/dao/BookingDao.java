@@ -38,7 +38,7 @@ public interface BookingDao  extends JpaRepository<Booking, Integer> {
     @Query("select b " +
             "from Booking as b "+
             "join b.booker as u " +
-            "where u.id = ?1 and b.start > CURRENT_TIMESTAMP and b.end < CURRENT_TIMESTAMP order by b.start desc ")
+            "where u.id = ?1 and b.start < CURRENT_TIMESTAMP and b.end > CURRENT_TIMESTAMP order by b.start desc ")
     List<Booking> findCurrentByBooker(int bookerId);
 
     @Query("select b " +
@@ -68,7 +68,7 @@ public interface BookingDao  extends JpaRepository<Booking, Integer> {
     @Query("select b " +
             "from Booking as b "+
             "join fetch b.item as i join fetch b.booker as u " +
-            "where i.ownerId = ?1 and b.start > CURRENT_TIMESTAMP and b.end < CURRENT_TIMESTAMP order by b.start desc ")
+            "where i.ownerId = ?1 and b.start < CURRENT_TIMESTAMP and b.end > CURRENT_TIMESTAMP order by b.start desc ")
     List<Booking> findCurrentByOwner(int ownerId);
 
     @Query("select b " +
