@@ -5,6 +5,7 @@ import ru.practicum.shareit.booking.dto.BookingDtoResp;
 import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.constants.Status;
 import ru.practicum.shareit.item.model.Item;
+import ru.practicum.shareit.user.mapper.UserMapper;
 import ru.practicum.shareit.user.model.User;
 
 public class BookingMapper {
@@ -22,7 +23,7 @@ public class BookingMapper {
                 booking.getStart(),
                 booking.getEnd(),
                 booking.getItem(),
-                booking.getBooker(),
+                UserMapper.toUserDto(booking.getBooker()),
                 booking.getStatus());
     }
 

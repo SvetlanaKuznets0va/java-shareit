@@ -1,5 +1,7 @@
 package ru.practicum.shareit.user.service;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.exception.NotFoundException;
@@ -14,6 +16,8 @@ import java.util.stream.Collectors;
 
 @Service
 public class UserServiceImpl implements UserService {
+    private final static Logger log = LoggerFactory.getLogger(UserServiceImpl.class);
+
     private UserDao userDao;
 
     @Autowired
@@ -25,7 +29,9 @@ public class UserServiceImpl implements UserService {
     public UserDto addUser(UserDto userDto) {
         UserValidator.validateUser(userDto);
         User user = UserMapper.toUserWithoutId(userDto);
-        return UserMapper.toUserDto(userDao.save(user));
+        UserDto result = UserMapper.toUserDto(userDao.save(user));
+        log.info("Добавлен пользователь id=" + result.getId());
+        return result;
     }
 
     @Override
@@ -42,7 +48,9 @@ public class UserServiceImpl implements UserService {
             return null;
         }
         User userAfter = UserMapper.combineUserWithUserDto(userBefore, userDto);
-        return UserMapper.toUserDto(userDao.save(userAfter));
+        UserDto result =  UserMapper.toUserDto(userDao.save(userAfter));
+        log.info("Обновлен пользователь id=" + id);
+        return result;
     }
 
     @Override
@@ -57,6 +65,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public void deleteUserById(int id) {
         userDao.deleteById(id);
+        log.info("Удален пользователь id=" + id);
     }
 
     @Override

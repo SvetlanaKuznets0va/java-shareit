@@ -81,12 +81,12 @@ public interface BookingDao extends JpaRepository<Booking, Integer> {
     @Query("select b " +
             "from Booking as b " +
             "join fetch b.item as i " +
-            "where i.id = ?1 and b.start < CURRENT_TIMESTAMP order by b.start desc")
-    List<Booking> findBookingWithLastNearestDateByItemId(int itemId);
+            "where i.id in ?1 and b.start < CURRENT_TIMESTAMP order by b.start desc")
+    List<Booking> findBookingWithLastNearestDateByItemId(List<Integer> itemsId);
 
     @Query("select b " +
             "from Booking as b " +
             "join fetch b.item as i " +
-            "where i.id = ?1 and b.start > CURRENT_TIMESTAMP order by b.start ")
-    List<Booking> findBookingWithNextNearestDateByItemId(int itemId);
+            "where i.id in ?1 and b.start > CURRENT_TIMESTAMP order by b.start ")
+    List<Booking> findBookingWithNextNearestDateByItemId(List<Integer> itemId);
 }

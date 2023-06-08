@@ -13,7 +13,7 @@ public class ErrorHandler {
     @ExceptionHandler
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public Map<String, String> handleValidationException(final ValidationException e) {
-        return Map.of("Validation Error", e.getMessage());
+        return Map.of("error", e.getMessage());
     }
 
     @ExceptionHandler
@@ -26,11 +26,5 @@ public class ErrorHandler {
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public Map<String, String> handleException(final Exception e) {
         return Map.of("Exception", e.getMessage());
-    }
-
-    @ExceptionHandler
-    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
-    public Map<String, String> handleException(final InvalidStatusException e) {
-        return Map.of("error", e.getMessage());
     }
 }

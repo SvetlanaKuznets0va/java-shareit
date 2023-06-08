@@ -1,5 +1,7 @@
 package ru.practicum.shareit.item.service;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
@@ -18,16 +20,18 @@ import ru.practicum.shareit.item.mapper.ItemMapper;
 import ru.practicum.shareit.item.model.Comment;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.item.validator.ItemValidator;
+import ru.practicum.shareit.user.dto.UserDto;
 import ru.practicum.shareit.user.service.UserService;
 
 import java.time.LocalDateTime;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Service
 public class ItemServiceImpl implements ItemService {
+    private final static Logger log = LoggerFactory.getLogger(ItemServiceImpl.class);
+
     private ItemDao itemDao;
     private BookingDao bookingDao;
     private CommentDao commentDao;
@@ -45,7 +49,9 @@ public class ItemServiceImpl implements ItemService {
         ItemValidator.validateItemDto(itemDto);
         checkOwner(userId);
         Item item = ItemMapper.toItemWithoutId(itemDto, userId);
-        return ItemMapper.toItemDto(itemDao.save(item));
+        ItemDto result = ItemMapper.toItemDto(itemDao.save(item));
+        log.info("Добавлена вещь " + result.getName() + " пользователем id=" + userId);
+        return result;
     }
 
     @Override
@@ -57,7 +63,9 @@ public class ItemServiceImpl implements ItemService {
         }
         checkOwnerToItem(userId, itemBefore.getOwnerId());
         Item itemAfter = ItemMapper.combineItemWithItemDto(itemBefore, itemDto);
-        return ItemMapper.toItemDto(itemDao.save(itemAfter));
+        ItemDto result = ItemMapper.toItemDto(itemDao.save(itemAfter));
+        log.info("Обновлена вещь " + result.getId() + " пользователем id=" + userId);
+        return result;
     }
 
     @Override
@@ -72,9 +80,9 @@ public class ItemServiceImpl implements ItemService {
         Booking last = null;
         Booking next = null;
         if (ownerId != null && item.getOwnerId() == ownerId) {
-            List<Booking> lasts = bookingDao.findBookingWithLastNearestDateByItemId(itemId);
+            List<Booking> lasts = bookingDao.findBookingWithLastNearestDateByItemId(Collections.singletonList(itemId));
             last = CollectionUtils.isEmpty(lasts) ? null : lasts.stream().findFirst().get();
-            List<Booking> nexts = bookingDao.findBookingWithNextNearestDateByItemId(itemId);
+            List<Booking> nexts = bookingDao.findBookingWithNextNearestDateByItemId(Collections.singletonList(itemId));
             next = CollectionUtils.isEmpty(nexts) ? null :
                     nexts.stream()
                             .filter(i -> i.getStatus() != Status.REJECTED)
@@ -86,18 +94,26 @@ public class ItemServiceImpl implements ItemService {
 
     @Override
     public List<ItemDtoPers> findItemsByUserId(int userId) {
-        return itemDao.findItemByOwnerIdOrderById(userId).stream()
-                .map(item -> {
-                    Booking last = null;
-                    Booking next = null;
-                    if (item.getOwnerId() == userId) {
-                        List<Booking> lasts = bookingDao.findBookingWithLastNearestDateByItemId(item.getId());
-                        last = CollectionUtils.isEmpty(lasts) ? null : lasts.stream().findFirst().get();
-                        List<Booking> nexts = bookingDao.findBookingWithNextNearestDateByItemId(item.getId());
-                        next = CollectionUtils.isEmpty(nexts) ? null : nexts.stream().findFirst().get();
-                    }
-                    return ItemMapper.toItemDtoPers(item, last, next, getListCommentsDto(item.getId()));
-                })
+        List<Item> items = itemDao.findAll().stream().filter(item -> item.getOwnerId() == userId)
+                .sorted(Comparator.comparingInt(Item::getId))
+                .collect(Collectors.toList());
+        List<Integer> groupItemId = items.stream().map(Item::getId).collect(Collectors.toList());
+
+        Map<Integer, Booking> lasts = bookingDao.findBookingWithLastNearestDateByItemId(groupItemId).stream()
+                .collect(Collectors.toMap(b -> b.getItem().getId(), b -> b,
+                        (o1, o2) -> o1.getStart().isBefore(o2.getStart()) ? o1 : o2));
+        Map<Integer, Booking> nexts = bookingDao.findBookingWithNextNearestDateByItemId(groupItemId).stream()
+                .collect(Collectors.toMap(b -> b.getItem().getId(), b -> b,
+                        (o1, o2) -> o1.getStart().isBefore(o2.getStart()) ? o1 : o2));
+
+        List<Comment> comments = commentDao.findCommentsByItemsId(groupItemId);
+        Function<Comment, CommentDto> commentToCommentDto = comment -> CommentMapper.toCommentDto(comment,
+                getUserNamesById().get(comment.getAuthorName()));
+        return items.stream()
+                .map(item -> ItemMapper
+                        .toItemDtoPers(item, lasts.get(item.getId()), nexts.get(item.getId()), comments.stream()
+                                .map(commentToCommentDto)
+                        .collect(Collectors.toList())))
                 .collect(Collectors.toList());
     }
 
@@ -114,12 +130,14 @@ public class ItemServiceImpl implements ItemService {
 
     private void checkOwner(int ownerId) {
         if (!userService.isExist(ownerId)) {
+            log.info("Владелец с несуществующим id=" + ownerId);
             throw new NotFoundException("Такого владельца нет");
         }
     }
 
     private void checkOwnerToItem(int outerOwnerId, int innerOwnerId) {
         if (outerOwnerId != innerOwnerId) {
+            log.info("Не совпадают id владельца. Запрос от id=" + outerOwnerId + " Владелец id=" + innerOwnerId);
             throw new NotFoundException("Такого владельца нет");
         }
     }
@@ -153,11 +171,17 @@ public class ItemServiceImpl implements ItemService {
     }
 
     private List<CommentDto> getListCommentsDto(int itemId) {
-        return commentDao.findCommentsByItemId(itemId).stream()
+        return commentDao.findCommentsByItemsId(Collections.singletonList(itemId)).stream()
                 .map(comment -> {
                     String name = userService.findUserById(comment.getAuthorName()).getName();
                     return CommentMapper.toCommentDto(comment, name);
                 })
                 .collect(Collectors.toList());
+    }
+
+    private Map<Integer, String> getUserNamesById() {
+        List<UserDto> users = userService.getAllUsers();
+        return users.stream()
+                .collect(Collectors.toMap(UserDto::getId, UserDto::getName));
     }
 }

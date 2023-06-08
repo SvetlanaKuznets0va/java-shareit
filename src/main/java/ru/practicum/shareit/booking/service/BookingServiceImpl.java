@@ -1,5 +1,7 @@
 package ru.practicum.shareit.booking.service;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.booking.dao.BookingDao;
 import ru.practicum.shareit.booking.dto.BookingDto;
@@ -9,7 +11,6 @@ import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.booking.validator.BookingValidator;
 import ru.practicum.shareit.constants.State;
 import ru.practicum.shareit.constants.Status;
-import ru.practicum.shareit.exception.InvalidStatusException;
 import ru.practicum.shareit.exception.NotFoundException;
 import ru.practicum.shareit.exception.ValidationException;
 import ru.practicum.shareit.item.dao.ItemDao;
@@ -22,6 +23,7 @@ import java.util.stream.Collectors;
 
 @Service
 public class BookingServiceImpl implements BookingService {
+    private final static Logger log = LoggerFactory.getLogger(BookingServiceImpl.class);
 
     private BookingDao bookingDao;
     private ItemDao itemDao;
@@ -38,20 +40,25 @@ public class BookingServiceImpl implements BookingService {
         BookingValidator.validateBookingDto(bookingDto);
         Item item = getItem(bookingDto.getItemId());
         if (item.getOwnerId() == userId) {
+            log.info("Владелец id=" + userId + ", попытка забронировать свою вещь");
             throw new NotFoundException("Нельзя бронировать свои вещи");
         }
         User user = getUser(userId);
         Booking booking = BookingMapper.toBooking(bookingDto, item, user);
-        return BookingMapper.toBookingDtoResp(bookingDao.save(booking));
+        BookingDtoResp result = BookingMapper.toBookingDtoResp(bookingDao.save(booking));
+        log.info("Пользователь id=" + userId + ", добавил бронирование id=" + result.getId());
+        return result;
     }
 
     @Override
     public BookingDtoResp approve(int ownerId, int bookingId, boolean approved) {
         Booking booking = bookingDao.findById(bookingId).orElseThrow(() -> new NotFoundException("Запись не найдена"));
         if (booking.getItem().getOwnerId() != ownerId) {
+            log.info("Пользователь id=" + ownerId + ", не владелец вещи для брони id=" + bookingId);
             throw new NotFoundException("Владелец не найден");
         }
         if (booking.getStatus() == Status.APPROVED) {
+            log.info("Владелец id=" + ownerId + ", попытка повторного утверждения");
             throw new ValidationException("Вещь уже утверждена");
         }
         if (approved) {
@@ -60,7 +67,9 @@ public class BookingServiceImpl implements BookingService {
             booking.setStatus(Status.REJECTED);
         }
 
-        return BookingMapper.toBookingDtoResp(bookingDao.save(booking));
+        BookingDtoResp result = BookingMapper.toBookingDtoResp(bookingDao.save(booking));
+        log.info("Владелец id=" + ownerId + ", для брони id=" + bookingId + " установил статус " + result.getStatus());
+        return result;
     }
 
     @Override
@@ -97,7 +106,7 @@ public class BookingServiceImpl implements BookingService {
         }
 
         return result.stream()
-                .map(b -> BookingMapper.toBookingDtoResp(b))
+                .map(BookingMapper::toBookingDtoResp)
                 .collect(Collectors.toList());
     }
 
@@ -130,7 +139,7 @@ public class BookingServiceImpl implements BookingService {
         }
 
         return result.stream()
-                .map(b -> BookingMapper.toBookingDtoResp(b))
+                .map(BookingMapper::toBookingDtoResp)
                 .collect(Collectors.toList());
     }
 
@@ -138,7 +147,8 @@ public class BookingServiceImpl implements BookingService {
         try {
             return State.valueOf(State.class, state);
         } catch (IllegalArgumentException e) {
-            throw new InvalidStatusException("Unknown state: UNSUPPORTED_STATUS");
+            log.warn("Не поддерживаемый статус: " + state);
+            throw new ValidationException("Unknown state: UNSUPPORTED_STATUS");
         }
     }
 
@@ -148,7 +158,7 @@ public class BookingServiceImpl implements BookingService {
 
     private Item getItem(int itemId) {
         Item item = itemDao.findById(itemId).orElseThrow(() -> new NotFoundException("Такая вещь не найдена"));
-        if (item.isAvailable() == false) {
+        if (!item.isAvailable()) {
             throw new ValidationException("Вещь не доступна");
         }
         return item;
