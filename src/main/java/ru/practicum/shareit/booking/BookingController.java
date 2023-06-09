@@ -15,7 +15,7 @@ import static ru.practicum.shareit.constants.Constatnts.USER_ID;
 @RestController
 @RequestMapping(path = "/bookings")
 public class BookingController {
-    private final static Logger log = LoggerFactory.getLogger(BookingController.class);
+    private final Logger log = LoggerFactory.getLogger(BookingController.class);
     private BookingService bookingService;
 
     @Autowired

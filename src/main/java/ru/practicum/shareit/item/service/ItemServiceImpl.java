@@ -30,7 +30,7 @@ import java.util.stream.Collectors;
 
 @Service
 public class ItemServiceImpl implements ItemService {
-    private final static Logger log = LoggerFactory.getLogger(ItemServiceImpl.class);
+    private final Logger log = LoggerFactory.getLogger(ItemServiceImpl.class);
 
     private ItemDao itemDao;
     private BookingDao bookingDao;

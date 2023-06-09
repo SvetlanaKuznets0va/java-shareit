@@ -14,7 +14,7 @@ import java.util.List;
 @RestController
 @RequestMapping(path = "/users")
 public class UserController {
-    private final static Logger log = LoggerFactory.getLogger(ItemController.class);
+    private final Logger log = LoggerFactory.getLogger(ItemController.class);
 
     private final UserService userService;
 

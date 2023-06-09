@@ -16,7 +16,7 @@ import static ru.practicum.shareit.constants.Constatnts.USER_ID;
 @RestController
 @RequestMapping("/items")
 public class ItemController {
-    private final static Logger log = LoggerFactory.getLogger(ItemController.class);
+    private final Logger log = LoggerFactory.getLogger(ItemController.class);
 
     private ItemService itemService;
 
