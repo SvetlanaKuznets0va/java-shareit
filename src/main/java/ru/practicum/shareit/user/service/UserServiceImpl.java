@@ -1,7 +1,10 @@
 package ru.practicum.shareit.user.service;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import ru.practicum.shareit.exception.NotFoundException;
 import ru.practicum.shareit.user.dao.UserDao;
 import ru.practicum.shareit.user.dto.UserDto;
 import ru.practicum.shareit.user.mapper.UserMapper;
@@ -13,6 +16,8 @@ import java.util.stream.Collectors;
 
 @Service
 public class UserServiceImpl implements UserService {
+    private final Logger log = LoggerFactory.getLogger(UserServiceImpl.class);
+
     private UserDao userDao;
 
     @Autowired
@@ -24,12 +29,14 @@ public class UserServiceImpl implements UserService {
     public UserDto addUser(UserDto userDto) {
         UserValidator.validateUser(userDto);
         User user = UserMapper.toUserWithoutId(userDto);
-        return UserMapper.toUserDto(userDao.addUser(user));
+        UserDto result = UserMapper.toUserDto(userDao.save(user));
+        log.info("Добавлен пользователь id={}", result.getId());
+        return result;
     }
 
     @Override
     public List<UserDto> getAllUsers() {
-        return userDao.getAllUsers().stream()
+        return userDao.findAll().stream()
                 .map(UserMapper::toUserDto)
                 .collect(Collectors.toList());
     }
@@ -40,35 +47,25 @@ public class UserServiceImpl implements UserService {
         if (userBefore == null) {
             return null;
         }
-        String updEmail = checkEmail(userBefore, userDto);
         User userAfter = UserMapper.combineUserWithUserDto(userBefore, userDto);
-        userAfter.setEmail(updEmail);
-        return UserMapper.toUserDto(userDao.updateUser(userAfter));
+        UserDto result = UserMapper.toUserDto(userDao.save(userAfter));
+        log.info("Обновлен пользователь id={}", id);
+        return result;
     }
 
     @Override
     public UserDto findUserById(int id) {
-        return UserMapper.toUserDto(userDao.findUserById(id));
+        try {
+            return UserMapper.toUserDto(userDao.findById(id).get());
+        } catch (Exception e) {
+            throw new NotFoundException("Такой пользователь не найден");
+        }
     }
 
     @Override
     public void deleteUserById(int id) {
-        userDao.deleteUserById(id);
-    }
-
-    private String checkEmail(User user, UserDto userDto) {
-        if (userDao.getEmails().contains(userDto.getEmail()) && !user.getEmail().equals(userDto.getEmail())) {
-            throw new RuntimeException("duplicate email");
-        }
-        if (user.getEmail().equals(userDto.getEmail()) || userDto.getEmail() == null) {
-            return user.getEmail();
-        }
-        if (userDto.getEmail() != null) {
-            userDao.getEmails().remove(user.getEmail());
-            userDao.getEmails().add(userDto.getEmail());
-            return userDto.getEmail();
-        }
-        return null;
+        userDao.deleteById(id);
+        log.info("Удален пользователь id={}", id);
     }
 
     @Override
