@@ -30,7 +30,7 @@ public class UserServiceImpl implements UserService {
         UserValidator.validateUser(userDto);
         User user = UserMapper.toUserWithoutId(userDto);
         UserDto result = UserMapper.toUserDto(userDao.save(user));
-        log.info("Добавлен пользователь id=" + result.getId());
+        log.info("Добавлен пользователь id={}", result.getId());
         return result;
     }
 
@@ -48,8 +48,8 @@ public class UserServiceImpl implements UserService {
             return null;
         }
         User userAfter = UserMapper.combineUserWithUserDto(userBefore, userDto);
-        UserDto result =  UserMapper.toUserDto(userDao.save(userAfter));
-        log.info("Обновлен пользователь id=" + id);
+        UserDto result = UserMapper.toUserDto(userDao.save(userAfter));
+        log.info("Обновлен пользователь id={}", id);
         return result;
     }
 
@@ -65,7 +65,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public void deleteUserById(int id) {
         userDao.deleteById(id);
-        log.info("Удален пользователь id=" + id);
+        log.info("Удален пользователь id={}", id);
     }
 
     @Override

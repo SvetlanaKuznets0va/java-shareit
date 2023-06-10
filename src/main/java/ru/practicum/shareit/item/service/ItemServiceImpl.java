@@ -50,7 +50,7 @@ public class ItemServiceImpl implements ItemService {
         checkOwner(userId);
         Item item = ItemMapper.toItemWithoutId(itemDto, userId);
         ItemDto result = ItemMapper.toItemDto(itemDao.save(item));
-        log.info("Добавлена вещь " + result.getName() + " пользователем id=" + userId);
+        log.info("Добавлена вещь: {}, пользователем id={}", result.getName(), userId);
         return result;
     }
 
@@ -64,7 +64,7 @@ public class ItemServiceImpl implements ItemService {
         checkOwnerToItem(userId, itemBefore.getOwnerId());
         Item itemAfter = ItemMapper.combineItemWithItemDto(itemBefore, itemDto);
         ItemDto result = ItemMapper.toItemDto(itemDao.save(itemAfter));
-        log.info("Обновлена вещь " + result.getId() + " пользователем id=" + userId);
+        log.info("Обновлена вещь {}, пользователем id={}", result.getId(), userId);
         return result;
     }
 
@@ -130,14 +130,14 @@ public class ItemServiceImpl implements ItemService {
 
     private void checkOwner(int ownerId) {
         if (!userService.isExist(ownerId)) {
-            log.info("Владелец с несуществующим id=" + ownerId);
+            log.info("Владелец с несуществующим id={}", ownerId);
             throw new NotFoundException("Такого владельца нет");
         }
     }
 
     private void checkOwnerToItem(int outerOwnerId, int innerOwnerId) {
         if (outerOwnerId != innerOwnerId) {
-            log.info("Не совпадают id владельца. Запрос от id=" + outerOwnerId + " Владелец id=" + innerOwnerId);
+            log.info("Не совпадают id владельца. Запрос от id={} Владелец id={}", outerOwnerId, innerOwnerId);
             throw new NotFoundException("Такого владельца нет");
         }
     }

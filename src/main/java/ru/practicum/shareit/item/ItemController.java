@@ -27,7 +27,7 @@ public class ItemController {
 
     @PostMapping()
     public ItemDto addItem(@RequestBody ItemDto itemDto, @RequestHeader(name = USER_ID) int userId) {
-        log.info("Добавление вещи пользователем id=" + userId);
+        log.info("Добавление вещи пользователем id={}", userId);
         return itemService.addItem(itemDto, userId);
     }
 
@@ -35,32 +35,32 @@ public class ItemController {
     public ItemDto updateItem(@RequestBody ItemDto itemDto,
                               @RequestHeader(name = USER_ID) int userId,
                               @PathVariable int itemId) {
-        log.info("Обновление вещи id=" + itemId + " пользователем id=" + userId);
+        log.info("Обновление вещи id={} пользователем id={}", itemId, userId);
         return itemService.updateItem(itemDto, userId, itemId);
     }
 
     @GetMapping("/{itemId}")
     public ItemDtoPers getItemById(@RequestHeader(required = false, name = USER_ID) Integer userId, @PathVariable int itemId) {
-        log.info("Запрос вещи id=" + itemId + " пользователем id=" + userId);
+        log.info("Запрос вещи id={} пользователем id={}", itemId, userId);
         return itemService.findItemByIdAndUserId(userId, itemId);
     }
 
     @GetMapping()
     public List<ItemDtoPers> getItemByUserId(@RequestHeader(name = USER_ID) int userId) {
-        log.info("Запрос вещей пользователем id=" + userId);
+        log.info("Запрос вещей пользователем id={}", userId);
         return itemService.findItemsByUserId(userId);
     }
 
     @GetMapping("/search")
     public List<ItemDto> searchItemsByText(@RequestParam String text) {
-        log.info("Запрос вещей сожержащих текст: " + text);
+        log.info("Запрос вещей сожержащих текст: {}", text);
         return itemService.searchItemsByText(text);
     }
 
     @PostMapping("/{itemId}/comment")
     public CommentDto addComment(@RequestHeader(name = USER_ID) int userId, @PathVariable int itemId,
                                  @RequestBody CommentDto text) {
-        log.info("Добавление комментария вещи id=" + itemId + " пользователем id=" + userId);
+        log.info("Добавление комментария вещи id={} пользователем id={}", itemId, userId);
         return itemService.addComment(userId, itemId, text);
     }
 }

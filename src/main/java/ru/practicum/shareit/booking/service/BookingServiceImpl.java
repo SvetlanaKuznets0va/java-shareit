@@ -40,13 +40,13 @@ public class BookingServiceImpl implements BookingService {
         BookingValidator.validateBookingDto(bookingDto);
         Item item = getItem(bookingDto.getItemId());
         if (item.getOwnerId() == userId) {
-            log.info("Владелец id=" + userId + ", попытка забронировать свою вещь");
+            log.info("Владелец id={}, попытка забронировать свою вещь", userId);
             throw new NotFoundException("Нельзя бронировать свои вещи");
         }
         User user = getUser(userId);
         Booking booking = BookingMapper.toBooking(bookingDto, item, user);
         BookingDtoResp result = BookingMapper.toBookingDtoResp(bookingDao.save(booking));
-        log.info("Пользователь id=" + userId + ", добавил бронирование id=" + result.getId());
+        log.info("Пользователь id={}, добавил бронирование id={}", userId, result.getId());
         return result;
     }
 
@@ -54,11 +54,11 @@ public class BookingServiceImpl implements BookingService {
     public BookingDtoResp approve(int ownerId, int bookingId, boolean approved) {
         Booking booking = bookingDao.findById(bookingId).orElseThrow(() -> new NotFoundException("Запись не найдена"));
         if (booking.getItem().getOwnerId() != ownerId) {
-            log.info("Пользователь id=" + ownerId + ", не владелец вещи для брони id=" + bookingId);
+            log.info("Пользователь id={}, не владелец вещи для брони id={}", ownerId, bookingId);
             throw new NotFoundException("Владелец не найден");
         }
         if (booking.getStatus() == Status.APPROVED) {
-            log.info("Владелец id=" + ownerId + ", попытка повторного утверждения");
+            log.info("Владелец id={}, попытка повторного утверждения", ownerId);
             throw new ValidationException("Вещь уже утверждена");
         }
         if (approved) {
@@ -68,7 +68,7 @@ public class BookingServiceImpl implements BookingService {
         }
 
         BookingDtoResp result = BookingMapper.toBookingDtoResp(bookingDao.save(booking));
-        log.info("Владелец id=" + ownerId + ", для брони id=" + bookingId + " установил статус " + result.getStatus());
+        log.info("Владелец id={}, для брони id={} установил статус {}", ownerId, bookingId, result.getStatus());
         return result;
     }
 
@@ -147,7 +147,7 @@ public class BookingServiceImpl implements BookingService {
         try {
             return State.valueOf(State.class, state);
         } catch (IllegalArgumentException e) {
-            log.warn("Не поддерживаемый статус: " + state);
+            log.warn("Не поддерживаемый статус: {}", state);
             throw new ValidationException("Unknown state: UNSUPPORTED_STATUS");
         }
     }
