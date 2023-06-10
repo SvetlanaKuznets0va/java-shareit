@@ -23,11 +23,13 @@ public class Item {
     private String name;
     private String description;
     private boolean available;
+    private Integer requestId;
 
-    public Item(int ownerId, String name, String description, boolean available) {
+    public Item(int ownerId, String name, String description, boolean available, Integer requestId) {
         this.ownerId = ownerId;
         this.name = name;
         this.description = description;
         this.available = available;
+        this.requestId = requestId;
     }
 }

@@ -12,9 +12,9 @@ public interface BookingService {
 
     BookingDtoResp getByBookingId(int userId, int bookingId);
 
-    List<BookingDtoResp> getAllForUser(int userId, String state);
+    List<BookingDtoResp> getAllForUser(Integer from, Integer size, int userId, String state);
 
-    List<BookingDtoResp> getAllForOwner(int ownerId, String state);
+    List<BookingDtoResp> getAllForOwner(Integer from, Integer size, int ownerId, String state);
 
 
 }

@@ -44,16 +44,20 @@ public class BookingController {
 
     @GetMapping()
     public List<BookingDtoResp> getAllForUser(@RequestHeader(name = USER_ID) int userId,
-                                              @RequestParam(defaultValue = "ALL") String state) {
+                                              @RequestParam(defaultValue = "ALL") String state,
+                                              @RequestParam(required = false) Integer from,
+                                              @RequestParam(required = false) Integer size) {
         log.info("Запрос всех записей пользователем id={} в статусе {}", userId, state);
-        return bookingService.getAllForUser(userId, state);
+        return bookingService.getAllForUser(from, size, userId, state);
     }
 
     @GetMapping("/owner")
     public List<BookingDtoResp> getAllForOwner(@RequestHeader(name = USER_ID) int userId,
-                                               @RequestParam(defaultValue = "ALL") String state) {
+                                               @RequestParam(defaultValue = "ALL") String state,
+                                               @RequestParam(required = false) Integer from,
+                                               @RequestParam(required = false) Integer size) {
         log.info("Запрос всех записей владельцем id={} в статусе {}", userId, state);
-        return bookingService.getAllForOwner(userId, state);
+        return bookingService.getAllForOwner(from, size, userId, state);
     }
 
 }
