@@ -44,9 +44,6 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserDto updateUser(UserDto userDto, int id) {
         User userBefore = UserMapper.toUser(findUserById(id));
-        if (userBefore == null) {
-            return null;
-        }
         User userAfter = UserMapper.combineUserWithUserDto(userBefore, userDto);
         UserDto result = UserMapper.toUserDto(userDao.save(userAfter));
         log.info("Обновлен пользователь id={}", id);

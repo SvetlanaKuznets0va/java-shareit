@@ -50,9 +50,9 @@ class ItemRequestServiceImplUnitTest {
 
         Mockito.verify(mockUserService, Mockito.times(1)).isExist(1);
         Mockito.verify(mockItemRequestDao, Mockito.times(1)).save(any(ItemRequest.class));
-        assertEquals(result.getId(), 1);
-        assertEquals(result.getDescription(), "description");
-        assertEquals(result.getCreated(), created);
+        assertEquals(1, result.getId());
+        assertEquals("description", result.getDescription());
+        assertEquals(created, result.getCreated());
     }
 
     @Test

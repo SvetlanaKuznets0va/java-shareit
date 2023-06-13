@@ -73,15 +73,4 @@ class ItemRequestDaoTest {
         itemRequestDao.saveAll(requests);
         return requests;
     }
-
-//    private List<Item> prepareItems (User user1, User user2, List<ItemRequest> requests) {
-//        List<Item> items = new ArrayList<>();
-//        items.add(new Item(0, user2.getId(), "item1", "item1", true, requests.get(0).getId()));
-//        items.add(new Item(0, user2.getId(), "item2", "item2", true, null));
-//        items.add(new Item(0, user2.getId(), "item3", "item3", true, requests.get(1).getId()));
-//        items.add(new Item(0, user2.getId(), "item4", "item4", true, null));
-//        items.add(new Item(0, user2.getId(), "item5", "item5", true, null));
-//        itemDao.saveAll(items);
-//        return itemDao.findAll();
-//    }
 }
