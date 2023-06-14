@@ -61,9 +61,6 @@ public class ItemServiceImpl implements ItemService {
     public ItemDto updateItem(ItemDto itemDto, int userId, int itemId) {
         checkOwner(userId);
         Item itemBefore = ItemMapper.toItem(findItemById(itemId));
-        if (itemBefore == null) {
-            return null;
-        }
         checkOwnerToItem(userId, itemBefore.getOwnerId());
         Item itemAfter = ItemMapper.combineItemWithItemDto(itemBefore, itemDto);
         ItemDto result = ItemMapper.toItemDto(itemDao.save(itemAfter));
@@ -149,20 +146,6 @@ public class ItemServiceImpl implements ItemService {
                 .collect(Collectors.toList());
     }
 
-    private void checkOwner(int ownerId) {
-        if (!userService.isExist(ownerId)) {
-            log.info("Владелец с несуществующим id={}", ownerId);
-            throw new NotFoundException("Такого владельца нет");
-        }
-    }
-
-    private void checkOwnerToItem(int outerOwnerId, int innerOwnerId) {
-        if (outerOwnerId != innerOwnerId) {
-            log.info("Не совпадают id владельца. Запрос от id={} Владелец id={}", outerOwnerId, innerOwnerId);
-            throw new NotFoundException("Такого владельца нет");
-        }
-    }
-
     @Override
     public CommentDto addComment(int userId, int itemId, CommentDto text) {
         if (!StringUtils.hasText(text.getText())) {
@@ -180,6 +163,20 @@ public class ItemServiceImpl implements ItemService {
             return CommentMapper.toCommentDto(commentDao.save(comment), booking.get().getBooker().getName());
         }
         throw new ValidationException("Вещь не была в аренде");
+    }
+
+    private void checkOwner(int ownerId) {
+        if (!userService.isExist(ownerId)) {
+            log.info("Владелец с несуществующим id={}", ownerId);
+            throw new NotFoundException("Такого владельца нет");
+        }
+    }
+
+    private void checkOwnerToItem(int outerOwnerId, int innerOwnerId) {
+        if (outerOwnerId != innerOwnerId) {
+            log.info("Не совпадают id владельца. Запрос от id={} Владелец id={}", outerOwnerId, innerOwnerId);
+            throw new NotFoundException("Такого владельца нет");
+        }
     }
 
     private Item getItem(int itemId) {
