@@ -30,6 +30,7 @@ class ItemDtoPersTest {
     LocalDateTime nextStart = LocalDateTime.parse(LocalDateTime.now().format(dtf));
     LocalDateTime nextEnd = LocalDateTime.parse(LocalDateTime.now().plusMinutes(10).format(dtf));
     LocalDateTime createdComment = LocalDateTime.parse(LocalDateTime.now().format(dtf));
+
     @Test
     void testItemDtoPers() throws IOException {
         User booker = new User(1, "op@pa.ru", "booker");

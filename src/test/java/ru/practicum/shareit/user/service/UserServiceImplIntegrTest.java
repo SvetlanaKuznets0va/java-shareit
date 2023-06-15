@@ -34,7 +34,7 @@ public class UserServiceImplIntegrTest {
 
     @Test
     void addUser() {
-        UserDto user = new UserDto(0,"op@pa.ru", "user1");
+        UserDto user = new UserDto(0, "op@pa.ru", "user1");
 
         userService.addUser(user);
 
@@ -47,8 +47,8 @@ public class UserServiceImplIntegrTest {
     @Test
     void getAllUsers() {
         List<User> users = new ArrayList<>();
-        users.add(new User(0,"op@pa.ru", "user1"));
-        users.add(new User(0,"po@ap.ru", "user2"));
+        users.add(new User(0, "op@pa.ru", "user1"));
+        users.add(new User(0, "po@ap.ru", "user2"));
 
         userDao.saveAll(users);
 
@@ -60,7 +60,7 @@ public class UserServiceImplIntegrTest {
 
     @Test
     void updateUser() {
-        UserDto user = new UserDto(0,"op@pa.ru", "user1");
+        UserDto user = new UserDto(0, "op@pa.ru", "user1");
         userService.addUser(user);
         TypedQuery<User> query = em.createQuery("Select u from User u where u.email = :email", User.class);
         User result = query.setParameter("email", user.getEmail()).getSingleResult();
@@ -74,7 +74,7 @@ public class UserServiceImplIntegrTest {
 
     @Test
     void findUserById() {
-        UserDto user = new UserDto(0,"op@pa.ru", "user1");
+        UserDto user = new UserDto(0, "op@pa.ru", "user1");
         userService.addUser(user);
         TypedQuery<User> query = em.createQuery("Select u from User u where u.email = :email", User.class);
         User result = query.setParameter("email", user.getEmail()).getSingleResult();
@@ -87,7 +87,7 @@ public class UserServiceImplIntegrTest {
 
     @Test
     void deleteUserById() {
-        UserDto user = new UserDto(0,"op@pa.ru", "user1");
+        UserDto user = new UserDto(0, "op@pa.ru", "user1");
         userService.addUser(user);
         TypedQuery<User> query = em.createQuery("Select u from User u where u.email = :email", User.class);
         User result = query.setParameter("email", user.getEmail()).getSingleResult();
@@ -99,8 +99,8 @@ public class UserServiceImplIntegrTest {
     }
 
     @Test
-    void isExist(){
-        UserDto user = new UserDto(0,"op@pa.ru", "user1");
+    void isExist() {
+        UserDto user = new UserDto(0, "op@pa.ru", "user1");
         userService.addUser(user);
         TypedQuery<User> query = em.createQuery("Select u from User u where u.email = :email", User.class);
         User result = query.setParameter("email", user.getEmail()).getSingleResult();

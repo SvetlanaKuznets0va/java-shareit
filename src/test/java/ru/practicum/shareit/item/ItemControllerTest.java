@@ -190,7 +190,7 @@ class ItemControllerTest {
     @Test
     void shouldThrowNotFoundExceptionInGetItemById() throws Exception {
         ItemDto itemReq = new ItemDto(null, null, "item1", "item1", true, null);
-        when(service.findItemByIdAndUserId( 2, 1)).thenThrow(new NotFoundException("Такой вещи нет"));
+        when(service.findItemByIdAndUserId(2, 1)).thenThrow(new NotFoundException("Такой вещи нет"));
 
         mvc.perform(get("/items/{itemId}", 1)
                         .header("X-Sharer-User-Id", 2)
