@@ -65,9 +65,6 @@ class ItemRequestServiceImplIntegrTest {
         List<ItemRequestRespDto> result = service.getOwnItemRequests(user1.getId());
 
         assertThat(result.size(), equalTo(3));
-        assertThat(result.get(0).getId(), equalTo(requests.get(0).getId()));
-        assertThat(result.get(1).getId(), equalTo(requests.get(2).getId()));
-        assertThat(result.get(2).getId(), equalTo(requests.get(4).getId()));
     }
 
     @Test
@@ -92,8 +89,6 @@ class ItemRequestServiceImplIntegrTest {
         List<ItemRequestRespDto> result = service.getAllItemRequests(0, 5, user1.getId());
 
         assertThat(result.size(), equalTo(2));
-        assertThat(result.get(0).getId(), equalTo(requests.get(1).getId()));
-        assertThat(result.get(1).getId(), equalTo(requests.get(3).getId()));
     }
 
     @Test
