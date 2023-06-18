@@ -2,11 +2,14 @@ package ru.practicum.shareit.item.service;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 import ru.practicum.shareit.booking.dao.BookingDao;
 import ru.practicum.shareit.booking.model.Booking;
+import ru.practicum.shareit.constants.Constatnts;
 import ru.practicum.shareit.constants.Status;
 import ru.practicum.shareit.exception.NotFoundException;
 import ru.practicum.shareit.exception.ValidationException;
@@ -58,9 +61,6 @@ public class ItemServiceImpl implements ItemService {
     public ItemDto updateItem(ItemDto itemDto, int userId, int itemId) {
         checkOwner(userId);
         Item itemBefore = ItemMapper.toItem(findItemById(itemId));
-        if (itemBefore == null) {
-            return null;
-        }
         checkOwnerToItem(userId, itemBefore.getOwnerId());
         Item itemAfter = ItemMapper.combineItemWithItemDto(itemBefore, itemDto);
         ItemDto result = ItemMapper.toItemDto(itemDao.save(itemAfter));
@@ -93,10 +93,20 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
-    public List<ItemDtoPers> findItemsByUserId(int userId) {
-        List<Item> items = itemDao.findAll().stream().filter(item -> item.getOwnerId() == userId)
-                .sorted(Comparator.comparingInt(Item::getId))
-                .collect(Collectors.toList());
+    public List<ItemDtoPers> findItemsByUserId(Integer from, Integer size, int userId) {
+        List<Item> items;
+        if (Constatnts.checkPagination(from, size)) {
+            Pageable pagebale = PageRequest.of(from > 0 ? from / size : 0, size);
+
+            items = itemDao.findAll(pagebale).stream().filter(item -> item.getOwnerId() == userId)
+                    .sorted(Comparator.comparingInt(Item::getId))
+                    .collect(Collectors.toList());
+        } else {
+            items = itemDao.findAll().stream().filter(item -> item.getOwnerId() == userId)
+                    .sorted(Comparator.comparingInt(Item::getId))
+                    .collect(Collectors.toList());
+        }
+
         List<Integer> groupItemId = items.stream().map(Item::getId).collect(Collectors.toList());
 
         Map<Integer, Booking> lasts = bookingDao.findBookingWithLastNearestDateByItemId(groupItemId).stream()
@@ -113,38 +123,27 @@ public class ItemServiceImpl implements ItemService {
                 .map(item -> ItemMapper
                         .toItemDtoPers(item, lasts.get(item.getId()), nexts.get(item.getId()), comments.stream()
                                 .map(commentToCommentDto)
-                        .collect(Collectors.toList())))
+                                .collect(Collectors.toList())))
                 .collect(Collectors.toList());
     }
 
     @Override
-    public List<ItemDto> searchItemsByText(String text) {
+    public List<ItemDto> searchItemsByText(Integer from, Integer size, String text) {
         if (!StringUtils.hasText(text)) {
             return Collections.emptyList();
         }
+        if (Constatnts.checkPagination(from, size)) {
+            Pageable pagebale = PageRequest.of(from > 0 ? from / size : 0, size);
+            return itemDao.findByNameContainingIgnoreCaseOrDescriptionContainingIgnoreCase(text, text, pagebale).stream()
+                    .filter(Item::isAvailable)
+                    .map(ItemMapper::toItemDto)
+                    .collect(Collectors.toList());
+        }
+
         return itemDao.findByNameContainingIgnoreCaseOrDescriptionContainingIgnoreCase(text, text).stream()
                 .filter(Item::isAvailable)
                 .map(ItemMapper::toItemDto)
                 .collect(Collectors.toList());
-    }
-
-    private void checkOwner(int ownerId) {
-        if (!userService.isExist(ownerId)) {
-            log.info("Владелец с несуществующим id={}", ownerId);
-            throw new NotFoundException("Такого владельца нет");
-        }
-    }
-
-    private void checkOwnerToItem(int outerOwnerId, int innerOwnerId) {
-        if (outerOwnerId != innerOwnerId) {
-            log.info("Не совпадают id владельца. Запрос от id={} Владелец id={}", outerOwnerId, innerOwnerId);
-            throw new NotFoundException("Такого владельца нет");
-        }
-    }
-
-    @Override
-    public boolean isExistItem(int itemId) {
-        return findItemById(itemId) != null;
     }
 
     @Override
@@ -164,6 +163,20 @@ public class ItemServiceImpl implements ItemService {
             return CommentMapper.toCommentDto(commentDao.save(comment), booking.get().getBooker().getName());
         }
         throw new ValidationException("Вещь не была в аренде");
+    }
+
+    private void checkOwner(int ownerId) {
+        if (!userService.isExist(ownerId)) {
+            log.info("Владелец с несуществующим id={}", ownerId);
+            throw new NotFoundException("Такого владельца нет");
+        }
+    }
+
+    private void checkOwnerToItem(int outerOwnerId, int innerOwnerId) {
+        if (outerOwnerId != innerOwnerId) {
+            log.info("Не совпадают id владельца. Запрос от id={} Владелец id={}", outerOwnerId, innerOwnerId);
+            throw new NotFoundException("Такого владельца нет");
+        }
     }
 
     private Item getItem(int itemId) {

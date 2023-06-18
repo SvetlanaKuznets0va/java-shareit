@@ -17,7 +17,8 @@ public class ItemMapper {
                 item.getOwnerId(),
                 item.getName(),
                 item.getDescription(),
-                item.isAvailable()
+                item.isAvailable(),
+                item.getRequestId()
         );
     }
 
@@ -30,7 +31,8 @@ public class ItemMapper {
                 item.isAvailable(),
                 last == null ? null : BookingMapper.bookingDto(last),
                 next == null ? null : BookingMapper.bookingDto(next),
-                comments
+                comments,
+                item.getRequestId()
         );
     }
 
@@ -40,7 +42,8 @@ public class ItemMapper {
                 item.getOwnerId(),
                 StringUtils.hasText(itemDto.getName()) ? itemDto.getName() : item.getName(),
                 StringUtils.hasText(itemDto.getDescription()) ? itemDto.getDescription() : item.getDescription(),
-                itemDto.getAvailable() != null ? itemDto.getAvailable() : item.isAvailable()
+                itemDto.getAvailable() != null ? itemDto.getAvailable() : item.isAvailable(),
+                item.getRequestId()
         );
     }
 
@@ -49,12 +52,13 @@ public class ItemMapper {
                 userId,
                 itemDto.getName(),
                 itemDto.getDescription(),
-                itemDto.getAvailable()
+                itemDto.getAvailable(),
+                itemDto.getRequestId()
         );
     }
 
     public static Item toItem(ItemDto itemDto) {
         return itemDto == null ? null : new Item(itemDto.getId(), itemDto.getOwnerId(),
-                itemDto.getName(), itemDto.getDescription(), itemDto.getAvailable());
+                itemDto.getName(), itemDto.getDescription(), itemDto.getAvailable(), itemDto.getRequestId());
     }
 }

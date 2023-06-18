@@ -15,11 +15,9 @@ public interface ItemService {
 
     ItemDtoPers findItemByIdAndUserId(Integer ownerId, int itemId);
 
-    List<ItemDtoPers> findItemsByUserId(int userId);
+    List<ItemDtoPers> findItemsByUserId(Integer from, Integer size, int userId);
 
-    List<ItemDto> searchItemsByText(String text);
-
-    boolean isExistItem(int itemId);
+    List<ItemDto> searchItemsByText(Integer from, Integer size, String text);
 
     CommentDto addComment(int userId, int itemId, CommentDto text);
 }
