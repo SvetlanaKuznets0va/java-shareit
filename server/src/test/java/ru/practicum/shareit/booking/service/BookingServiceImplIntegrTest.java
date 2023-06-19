@@ -102,7 +102,7 @@ class BookingServiceImplIntegrTest {
 
         service.add(bookingDto, booker.getId());
 
-        List<BookingDtoResp> result = service.getAllForUser(null, null, booker.getId(), "ALL");
+        List<BookingDtoResp> result = service.getAllForUser(0, 10, booker.getId(), "ALL");
 
         assertThat(result.get(0).getItem().getId(), equalTo(resultItem.getId()));
         assertThat(result.get(0).getBooker().getId(), equalTo(booker.getId()));
@@ -119,7 +119,7 @@ class BookingServiceImplIntegrTest {
 
         service.add(bookingDto, booker.getId());
 
-        List<BookingDtoResp> result = service.getAllForOwner(null, null, owner.getId(), "ALL");
+        List<BookingDtoResp> result = service.getAllForOwner(0, 10, owner.getId(), "ALL");
 
         assertThat(result.get(0).getItem().getId(), equalTo(resultItem.getId()));
         assertThat(result.get(0).getBooker().getId(), equalTo(booker.getId()));

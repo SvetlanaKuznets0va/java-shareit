@@ -64,62 +64,6 @@ class BookingServiceImplUnitTest {
     }
 
     @Test
-    void shouldThrowValidationExceptionIfItemIdIsNullInAddBooking() {
-        BookingService service = new BookingServiceImpl(bookingDao, itemDao, userDao);
-        BookingDto bookingDto = new BookingDto(0, start, end, null, null, null);
-
-        assertThrows(ValidationException.class, () -> service.add(bookingDto, 1));
-    }
-
-    @Test
-    void shouldThrowValidationExceptionIfStartIsNullInAddBooking() {
-        BookingService service = new BookingServiceImpl(bookingDao, itemDao, userDao);
-        BookingDto bookingDto = new BookingDto(0, null, end, 1, null, null);
-
-        assertThrows(ValidationException.class, () -> service.add(bookingDto, 1));
-    }
-
-    @Test
-    void shouldThrowValidationExceptionIfEndIsNullInAddBooking() {
-        BookingService service = new BookingServiceImpl(bookingDao, itemDao, userDao);
-        BookingDto bookingDto = new BookingDto(0, start, null, 1, null, null);
-
-        assertThrows(ValidationException.class, () -> service.add(bookingDto, 1));
-    }
-
-    @Test
-    void shouldThrowValidationExceptionIfEndBeforeStartInAddBooking() {
-        BookingService service = new BookingServiceImpl(bookingDao, itemDao, userDao);
-        BookingDto bookingDto = new BookingDto(0, start.plusHours(1), end, 1, null, null);
-
-        assertThrows(ValidationException.class, () -> service.add(bookingDto, 1));
-    }
-
-    @Test
-    void shouldThrowValidationExceptionIfEndBeforeNowInAddBooking() {
-        BookingService service = new BookingServiceImpl(bookingDao, itemDao, userDao);
-        BookingDto bookingDto = new BookingDto(0, start, end.minusHours(1), 1, null, null);
-
-        assertThrows(ValidationException.class, () -> service.add(bookingDto, 1));
-    }
-
-    @Test
-    void shouldThrowValidationExceptionIfStartBeforeNowInAddBooking() {
-        BookingService service = new BookingServiceImpl(bookingDao, itemDao, userDao);
-        BookingDto bookingDto = new BookingDto(0, start.minusHours(1), end, 1, null, null);
-
-        assertThrows(ValidationException.class, () -> service.add(bookingDto, 1));
-    }
-
-    @Test
-    void shouldThrowValidationExceptionIfStartEqualEndInAddBooking() {
-        BookingService service = new BookingServiceImpl(bookingDao, itemDao, userDao);
-        BookingDto bookingDto = new BookingDto(0, start, start, 1, null, null);
-
-        assertThrows(ValidationException.class, () -> service.add(bookingDto, 1));
-    }
-
-    @Test
     void shouldThrowNotFoundExceptionIfItemNotFoundInAddBooking() {
         BookingService service = new BookingServiceImpl(bookingDao, itemDao, userDao);
         BookingDto bookingDto = new BookingDto(0, start, end, 1, null, null);
@@ -303,27 +247,6 @@ class BookingServiceImplUnitTest {
     }
 
     @Test
-    void shouldGetAllBookingsForUserWithoutPagebale() {
-        BookingService service = new BookingServiceImpl(bookingDao, itemDao, userDao);
-        User booker = new User(1, "op@pa.ru", "booker");
-        Item item = new Item(1, 2, "item", "description", true, null);
-        Booking booking = new Booking(1, start, end, item, booker, Status.WAITING);
-
-        Mockito.when(userDao.findById(1)).thenReturn(Optional.of(booker));
-        Mockito.when(bookingDao.findAllByBooker(1)).thenReturn(Collections.singletonList(booking));
-
-        List<BookingDtoResp> result = service.getAllForUser(null, null, 1, "ALL");
-
-        assertEquals(1, result.size());
-        assertEquals(1, result.get(0).getId());
-        assertEquals(start, result.get(0).getStart());
-        assertEquals(end, result.get(0).getEnd());
-        assertEquals(item.getId(), result.get(0).getItem().getId());
-        assertEquals(booker.getId(), result.get(0).getBooker().getId());
-        assertEquals(Status.WAITING, result.get(0).getStatus());
-    }
-
-    @Test
     void shouldGetFutureBookingsForUserWithPagebale() {
         int from = 0;
         int size = 2;
@@ -337,27 +260,6 @@ class BookingServiceImplUnitTest {
         Mockito.when(bookingDao.findFutureByBooker(1, pagebale)).thenReturn(Collections.singletonList(booking));
 
         List<BookingDtoResp> result = service.getAllForUser(from, size, 1, "FUTURE");
-
-        assertEquals(1, result.size());
-        assertEquals(1, result.get(0).getId());
-        assertEquals(start, result.get(0).getStart());
-        assertEquals(end, result.get(0).getEnd());
-        assertEquals(item.getId(), result.get(0).getItem().getId());
-        assertEquals(booker.getId(), result.get(0).getBooker().getId());
-        assertEquals(Status.WAITING, result.get(0).getStatus());
-    }
-
-    @Test
-    void shouldGetFutureBookingsForUserWithoutPagebale() {
-        BookingService service = new BookingServiceImpl(bookingDao, itemDao, userDao);
-        User booker = new User(1, "op@pa.ru", "booker");
-        Item item = new Item(1, 2, "item", "description", true, null);
-        Booking booking = new Booking(1, start, end, item, booker, Status.WAITING);
-
-        Mockito.when(userDao.findById(1)).thenReturn(Optional.of(booker));
-        Mockito.when(bookingDao.findFutureByBooker(1)).thenReturn(Collections.singletonList(booking));
-
-        List<BookingDtoResp> result = service.getAllForUser(null, null, 1, "FUTURE");
 
         assertEquals(1, result.size());
         assertEquals(1, result.get(0).getId());
@@ -393,27 +295,6 @@ class BookingServiceImplUnitTest {
     }
 
     @Test
-    void shouldGetPastBookingsForUserWithoutPagebale() {
-        BookingService service = new BookingServiceImpl(bookingDao, itemDao, userDao);
-        User booker = new User(1, "op@pa.ru", "booker");
-        Item item = new Item(1, 2, "item", "description", true, null);
-        Booking booking = new Booking(1, start.minusHours(2), end.minusHours(2), item, booker, Status.WAITING);
-
-        Mockito.when(userDao.findById(1)).thenReturn(Optional.of(booker));
-        Mockito.when(bookingDao.findPastByBooker(1)).thenReturn(Collections.singletonList(booking));
-
-        List<BookingDtoResp> result = service.getAllForUser(null, null, 1, "PAST");
-
-        assertEquals(1, result.size());
-        assertEquals(1, result.get(0).getId());
-        assertEquals(start.minusHours(2), result.get(0).getStart());
-        assertEquals(end.minusHours(2), result.get(0).getEnd());
-        assertEquals(item.getId(), result.get(0).getItem().getId());
-        assertEquals(booker.getId(), result.get(0).getBooker().getId());
-        assertEquals(Status.WAITING, result.get(0).getStatus());
-    }
-
-    @Test
     void shouldGetCurrentBookingsForUserWithPagebale() {
         int from = 0;
         int size = 2;
@@ -427,27 +308,6 @@ class BookingServiceImplUnitTest {
         Mockito.when(bookingDao.findCurrentByBooker(1, pagebale)).thenReturn(Collections.singletonList(booking));
 
         List<BookingDtoResp> result = service.getAllForUser(from, size, 1, "CURRENT");
-
-        assertEquals(1, result.size());
-        assertEquals(1, result.get(0).getId());
-        assertEquals(start.minusHours(2), result.get(0).getStart());
-        assertEquals(end.plusHours(2), result.get(0).getEnd());
-        assertEquals(item.getId(), result.get(0).getItem().getId());
-        assertEquals(booker.getId(), result.get(0).getBooker().getId());
-        assertEquals(Status.WAITING, result.get(0).getStatus());
-    }
-
-    @Test
-    void shouldGetCurrentBookingsForUserWithoutPagebale() {
-        BookingService service = new BookingServiceImpl(bookingDao, itemDao, userDao);
-        User booker = new User(1, "op@pa.ru", "booker");
-        Item item = new Item(1, 2, "item", "description", true, null);
-        Booking booking = new Booking(1, start.minusHours(2), end.plusHours(2), item, booker, Status.WAITING);
-
-        Mockito.when(userDao.findById(1)).thenReturn(Optional.of(booker));
-        Mockito.when(bookingDao.findCurrentByBooker(1)).thenReturn(Collections.singletonList(booking));
-
-        List<BookingDtoResp> result = service.getAllForUser(null, null, 1, "CURRENT");
 
         assertEquals(1, result.size());
         assertEquals(1, result.get(0).getId());
@@ -483,27 +343,6 @@ class BookingServiceImplUnitTest {
     }
 
     @Test
-    void shouldGetWaitingBookingsForUserWithoutPagebale() {
-        BookingService service = new BookingServiceImpl(bookingDao, itemDao, userDao);
-        User booker = new User(1, "op@pa.ru", "booker");
-        Item item = new Item(1, 2, "item", "description", true, null);
-        Booking booking = new Booking(1, start, end, item, booker, Status.WAITING);
-
-        Mockito.when(userDao.findById(1)).thenReturn(Optional.of(booker));
-        Mockito.when(bookingDao.findWaitingOrRejectedByBooker(1, Status.WAITING)).thenReturn(Collections.singletonList(booking));
-
-        List<BookingDtoResp> result = service.getAllForUser(null, null, 1, "WAITING");
-
-        assertEquals(1, result.size());
-        assertEquals(1, result.get(0).getId());
-        assertEquals(start, result.get(0).getStart());
-        assertEquals(end, result.get(0).getEnd());
-        assertEquals(item.getId(), result.get(0).getItem().getId());
-        assertEquals(booker.getId(), result.get(0).getBooker().getId());
-        assertEquals(Status.WAITING, result.get(0).getStatus());
-    }
-
-    @Test
     void shouldGetRejevtedBookingsForUserWithPagebale() {
         int from = 0;
         int size = 2;
@@ -517,27 +356,6 @@ class BookingServiceImplUnitTest {
         Mockito.when(bookingDao.findWaitingOrRejectedByBooker(1, Status.REJECTED, pagebale)).thenReturn(Collections.singletonList(booking));
 
         List<BookingDtoResp> result = service.getAllForUser(from, size, 1, "REJECTED");
-
-        assertEquals(1, result.size());
-        assertEquals(1, result.get(0).getId());
-        assertEquals(start, result.get(0).getStart());
-        assertEquals(end, result.get(0).getEnd());
-        assertEquals(item.getId(), result.get(0).getItem().getId());
-        assertEquals(booker.getId(), result.get(0).getBooker().getId());
-        assertEquals(Status.REJECTED, result.get(0).getStatus());
-    }
-
-    @Test
-    void shouldGetRejectedBookingsForUserWithoutPagebale() {
-        BookingService service = new BookingServiceImpl(bookingDao, itemDao, userDao);
-        User booker = new User(1, "op@pa.ru", "booker");
-        Item item = new Item(1, 2, "item", "description", true, null);
-        Booking booking = new Booking(1, start, end, item, booker, Status.REJECTED);
-
-        Mockito.when(userDao.findById(1)).thenReturn(Optional.of(booker));
-        Mockito.when(bookingDao.findWaitingOrRejectedByBooker(1, Status.REJECTED)).thenReturn(Collections.singletonList(booking));
-
-        List<BookingDtoResp> result = service.getAllForUser(null, null, 1, "REJECTED");
 
         assertEquals(1, result.size());
         assertEquals(1, result.get(0).getId());
@@ -583,28 +401,6 @@ class BookingServiceImplUnitTest {
     }
 
     @Test
-    void shouldGetAllBookingsForOwnerWithoutPagebale() {
-        BookingService service = new BookingServiceImpl(bookingDao, itemDao, userDao);
-        User booker = new User(1, "op@pa.ru", "booker");
-        User owner = new User(2, "pa@op.ru", "owner");
-        Item item = new Item(1, 2, "item", "description", true, null);
-        Booking booking = new Booking(1, start, end, item, booker, Status.WAITING);
-
-        Mockito.when(userDao.findById(2)).thenReturn(Optional.of(owner));
-        Mockito.when(bookingDao.findAllByOwner(2)).thenReturn(Collections.singletonList(booking));
-
-        List<BookingDtoResp> result = service.getAllForOwner(null, null, 2, "ALL");
-
-        assertEquals(1, result.size());
-        assertEquals(1, result.get(0).getId());
-        assertEquals(start, result.get(0).getStart());
-        assertEquals(end, result.get(0).getEnd());
-        assertEquals(item.getId(), result.get(0).getItem().getId());
-        assertEquals(booker.getId(), result.get(0).getBooker().getId());
-        assertEquals(Status.WAITING, result.get(0).getStatus());
-    }
-
-    @Test
     void shouldGetFutureBookingsForOwnerWithPagebale() {
         int from = 0;
         int size = 2;
@@ -619,28 +415,6 @@ class BookingServiceImplUnitTest {
         Mockito.when(bookingDao.findFutureByOwner(2, pagebale)).thenReturn(Collections.singletonList(booking));
 
         List<BookingDtoResp> result = service.getAllForOwner(from, size, 2, "FUTURE");
-
-        assertEquals(1, result.size());
-        assertEquals(1, result.get(0).getId());
-        assertEquals(start, result.get(0).getStart());
-        assertEquals(end, result.get(0).getEnd());
-        assertEquals(item.getId(), result.get(0).getItem().getId());
-        assertEquals(booker.getId(), result.get(0).getBooker().getId());
-        assertEquals(Status.WAITING, result.get(0).getStatus());
-    }
-
-    @Test
-    void shouldGetFutureBookingsForOwnerWithoutPagebale() {
-        BookingService service = new BookingServiceImpl(bookingDao, itemDao, userDao);
-        User booker = new User(1, "op@pa.ru", "booker");
-        User owner = new User(2, "pa@op.ru", "owner");
-        Item item = new Item(1, 2, "item", "description", true, null);
-        Booking booking = new Booking(1, start, end, item, booker, Status.WAITING);
-
-        Mockito.when(userDao.findById(2)).thenReturn(Optional.of(owner));
-        Mockito.when(bookingDao.findFutureByOwner(2)).thenReturn(Collections.singletonList(booking));
-
-        List<BookingDtoResp> result = service.getAllForOwner(null, null, 2, "FUTURE");
 
         assertEquals(1, result.size());
         assertEquals(1, result.get(0).getId());
@@ -677,28 +451,6 @@ class BookingServiceImplUnitTest {
     }
 
     @Test
-    void shouldGetPastBookingsForOwnerWithoutPagebale() {
-        BookingService service = new BookingServiceImpl(bookingDao, itemDao, userDao);
-        User booker = new User(1, "op@pa.ru", "booker");
-        User owner = new User(2, "pa@op.ru", "owner");
-        Item item = new Item(1, 2, "item", "description", true, null);
-        Booking booking = new Booking(1, start.minusHours(2), end.minusHours(2), item, booker, Status.WAITING);
-
-        Mockito.when(userDao.findById(2)).thenReturn(Optional.of(owner));
-        Mockito.when(bookingDao.findPastByOwner(2)).thenReturn(Collections.singletonList(booking));
-
-        List<BookingDtoResp> result = service.getAllForOwner(null, null, 2, "PAST");
-
-        assertEquals(1, result.size());
-        assertEquals(1, result.get(0).getId());
-        assertEquals(start.minusHours(2), result.get(0).getStart());
-        assertEquals(end.minusHours(2), result.get(0).getEnd());
-        assertEquals(item.getId(), result.get(0).getItem().getId());
-        assertEquals(booker.getId(), result.get(0).getBooker().getId());
-        assertEquals(Status.WAITING, result.get(0).getStatus());
-    }
-
-    @Test
     void shouldGetCurrentBookingsForOwnerWithPagebale() {
         int from = 0;
         int size = 2;
@@ -713,28 +465,6 @@ class BookingServiceImplUnitTest {
         Mockito.when(bookingDao.findCurrentByOwner(2, pagebale)).thenReturn(Collections.singletonList(booking));
 
         List<BookingDtoResp> result = service.getAllForOwner(from, size, 2, "CURRENT");
-
-        assertEquals(1, result.size());
-        assertEquals(1, result.get(0).getId());
-        assertEquals(start.minusHours(2), result.get(0).getStart());
-        assertEquals(end.plusHours(2), result.get(0).getEnd());
-        assertEquals(item.getId(), result.get(0).getItem().getId());
-        assertEquals(booker.getId(), result.get(0).getBooker().getId());
-        assertEquals(Status.WAITING, result.get(0).getStatus());
-    }
-
-    @Test
-    void shouldGetCurrentBookingsForOwnerWithoutPagebale() {
-        BookingService service = new BookingServiceImpl(bookingDao, itemDao, userDao);
-        User booker = new User(1, "op@pa.ru", "booker");
-        User owner = new User(2, "pa@op.ru", "owner");
-        Item item = new Item(1, 2, "item", "description", true, null);
-        Booking booking = new Booking(1, start.minusHours(2), end.plusHours(2), item, booker, Status.WAITING);
-
-        Mockito.when(userDao.findById(2)).thenReturn(Optional.of(owner));
-        Mockito.when(bookingDao.findCurrentByOwner(2)).thenReturn(Collections.singletonList(booking));
-
-        List<BookingDtoResp> result = service.getAllForOwner(null, null, 2, "CURRENT");
 
         assertEquals(1, result.size());
         assertEquals(1, result.get(0).getId());
@@ -771,28 +501,6 @@ class BookingServiceImplUnitTest {
     }
 
     @Test
-    void shouldGetWaitingBookingsForOwnerWithoutPagebale() {
-        BookingService service = new BookingServiceImpl(bookingDao, itemDao, userDao);
-        User booker = new User(1, "op@pa.ru", "booker");
-        User owner = new User(2, "pa@op.ru", "owner");
-        Item item = new Item(1, 2, "item", "description", true, null);
-        Booking booking = new Booking(1, start, end, item, booker, Status.WAITING);
-
-        Mockito.when(userDao.findById(2)).thenReturn(Optional.of(owner));
-        Mockito.when(bookingDao.findWaitingOrRejectedByOwner(2, Status.WAITING)).thenReturn(Collections.singletonList(booking));
-
-        List<BookingDtoResp> result = service.getAllForOwner(null, null, 2, "WAITING");
-
-        assertEquals(1, result.size());
-        assertEquals(1, result.get(0).getId());
-        assertEquals(start, result.get(0).getStart());
-        assertEquals(end, result.get(0).getEnd());
-        assertEquals(item.getId(), result.get(0).getItem().getId());
-        assertEquals(booker.getId(), result.get(0).getBooker().getId());
-        assertEquals(Status.WAITING, result.get(0).getStatus());
-    }
-
-    @Test
     void shouldGetRejevtedBookingsForOwnerWithPagebale() {
         int from = 0;
         int size = 2;
@@ -807,28 +515,6 @@ class BookingServiceImplUnitTest {
         Mockito.when(bookingDao.findWaitingOrRejectedByOwner(2, Status.REJECTED, pagebale)).thenReturn(Collections.singletonList(booking));
 
         List<BookingDtoResp> result = service.getAllForOwner(from, size, 2, "REJECTED");
-
-        assertEquals(1, result.size());
-        assertEquals(1, result.get(0).getId());
-        assertEquals(start, result.get(0).getStart());
-        assertEquals(end, result.get(0).getEnd());
-        assertEquals(item.getId(), result.get(0).getItem().getId());
-        assertEquals(booker.getId(), result.get(0).getBooker().getId());
-        assertEquals(Status.REJECTED, result.get(0).getStatus());
-    }
-
-    @Test
-    void shouldGetRejectedBookingsForOwnerWithoutPagebale() {
-        BookingService service = new BookingServiceImpl(bookingDao, itemDao, userDao);
-        User booker = new User(1, "op@pa.ru", "booker");
-        User owner = new User(2, "pa@op.ru", "owner");
-        Item item = new Item(1, 2, "item", "description", true, null);
-        Booking booking = new Booking(1, start, end, item, booker, Status.REJECTED);
-
-        Mockito.when(userDao.findById(2)).thenReturn(Optional.of(owner));
-        Mockito.when(bookingDao.findWaitingOrRejectedByOwner(2, Status.REJECTED)).thenReturn(Collections.singletonList(booking));
-
-        List<BookingDtoResp> result = service.getAllForOwner(null, null, 2, "REJECTED");
 
         assertEquals(1, result.size());
         assertEquals(1, result.get(0).getId());

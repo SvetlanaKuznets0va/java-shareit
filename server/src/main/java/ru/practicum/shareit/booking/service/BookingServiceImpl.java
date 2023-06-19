@@ -10,7 +10,6 @@ import ru.practicum.shareit.booking.dto.BookingDto;
 import ru.practicum.shareit.booking.dto.BookingDtoResp;
 import ru.practicum.shareit.booking.mapper.BookingMapper;
 import ru.practicum.shareit.booking.model.Booking;
-import ru.practicum.shareit.booking.validator.BookingValidator;
 import ru.practicum.shareit.constants.State;
 import ru.practicum.shareit.constants.Status;
 import ru.practicum.shareit.exception.NotFoundException;
@@ -19,7 +18,6 @@ import ru.practicum.shareit.item.dao.ItemDao;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.user.dao.UserDao;
 import ru.practicum.shareit.user.model.User;
-import ru.practicum.shareit.util.Util;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -40,7 +38,6 @@ public class BookingServiceImpl implements BookingService {
 
     @Override
     public BookingDtoResp add(BookingDto bookingDto, int userId) {
-        BookingValidator.validateBookingDto(bookingDto);
         Item item = getItem(bookingDto.getItemId());
         if (item.getOwnerId() == userId) {
             log.info("Владелец id={}, попытка забронировать свою вещь", userId);
@@ -82,36 +79,29 @@ public class BookingServiceImpl implements BookingService {
 
     @Override
     public List<BookingDtoResp> getAllForUser(Integer from, Integer size, int userId, String state) {
-        boolean isPagebale = Util.checkPagination(from, size);
         getUser(userId);
         List<Booking> result = null;
 
         State stateStatus = checkState(state);
-        Pageable pagebale = isPagebale ? PageRequest.of(from > 0 ? from / size : 0, size) : null;
+        Pageable pagebale = PageRequest.of(from > 0 ? from / size : 0, size);
         switch (stateStatus) {
             case ALL:
-                result = isPagebale ? bookingDao.findAllByBooker(userId, pagebale) :
-                        bookingDao.findAllByBooker(userId);
+                result = bookingDao.findAllByBooker(userId, pagebale);
                 break;
             case FUTURE:
-                result = isPagebale ? bookingDao.findFutureByBooker(userId, pagebale) :
-                        bookingDao.findFutureByBooker(userId);
+                result = bookingDao.findFutureByBooker(userId, pagebale);
                 break;
             case PAST:
-                result = isPagebale ? bookingDao.findPastByBooker(userId, pagebale) :
-                        bookingDao.findPastByBooker(userId);
+                result = bookingDao.findPastByBooker(userId, pagebale);
                 break;
             case CURRENT:
-                result = isPagebale ? bookingDao.findCurrentByBooker(userId, pagebale) :
-                        bookingDao.findCurrentByBooker(userId);
+                result = bookingDao.findCurrentByBooker(userId, pagebale);
                 break;
             case WAITING:
-                result = isPagebale ? bookingDao.findWaitingOrRejectedByBooker(userId, Status.WAITING, pagebale) :
-                        bookingDao.findWaitingOrRejectedByBooker(userId, Status.WAITING);
+                result = bookingDao.findWaitingOrRejectedByBooker(userId, Status.WAITING, pagebale);
                 break;
             case REJECTED:
-                result = isPagebale ? bookingDao.findWaitingOrRejectedByBooker(userId, Status.REJECTED, pagebale) :
-                        bookingDao.findWaitingOrRejectedByBooker(userId, Status.REJECTED);
+                result = bookingDao.findWaitingOrRejectedByBooker(userId, Status.REJECTED, pagebale);
                 break;
         }
 
@@ -122,36 +112,29 @@ public class BookingServiceImpl implements BookingService {
 
     @Override
     public List<BookingDtoResp> getAllForOwner(Integer from, Integer size, int ownerId, String state) {
-        boolean isPagebale = Util.checkPagination(from, size);
         getUser(ownerId);
         List<Booking> result = null;
 
         State stateStatus = checkState(state);
-        Pageable pagebale = isPagebale ? PageRequest.of(from > 0 ? from / size : 0, size) : null;
+        Pageable pagebale = PageRequest.of(from > 0 ? from / size : 0, size);
         switch (stateStatus) {
             case ALL:
-                result = isPagebale ? bookingDao.findAllByOwner(ownerId, pagebale) :
-                        bookingDao.findAllByOwner(ownerId);
+                result = bookingDao.findAllByOwner(ownerId, pagebale);
                 break;
             case FUTURE:
-                result = isPagebale ? bookingDao.findFutureByOwner(ownerId, pagebale) :
-                        bookingDao.findFutureByOwner(ownerId);
+                result = bookingDao.findFutureByOwner(ownerId, pagebale);
                 break;
             case PAST:
-                result = isPagebale ? bookingDao.findPastByOwner(ownerId, pagebale) :
-                        bookingDao.findPastByOwner(ownerId);
+                result = bookingDao.findPastByOwner(ownerId, pagebale);
                 break;
             case CURRENT:
-                result = isPagebale ? bookingDao.findCurrentByOwner(ownerId, pagebale) :
-                        bookingDao.findCurrentByOwner(ownerId);
+                result = bookingDao.findCurrentByOwner(ownerId, pagebale);
                 break;
             case WAITING:
-                result = isPagebale ? bookingDao.findWaitingOrRejectedByOwner(ownerId, Status.WAITING, pagebale) :
-                        bookingDao.findWaitingOrRejectedByOwner(ownerId, Status.WAITING);
+                result = bookingDao.findWaitingOrRejectedByOwner(ownerId, Status.WAITING, pagebale);
                 break;
             case REJECTED:
-                result = isPagebale ? bookingDao.findWaitingOrRejectedByOwner(ownerId, Status.REJECTED, pagebale) :
-                        bookingDao.findWaitingOrRejectedByOwner(ownerId, Status.REJECTED);
+                result = bookingDao.findWaitingOrRejectedByOwner(ownerId, Status.REJECTED, pagebale);
                 break;
         }
 
