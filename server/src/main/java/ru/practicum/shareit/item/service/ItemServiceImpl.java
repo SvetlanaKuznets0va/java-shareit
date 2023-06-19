@@ -6,7 +6,6 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
-import org.springframework.util.StringUtils;
 import ru.practicum.shareit.booking.dao.BookingDao;
 import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.constants.Status;
@@ -21,10 +20,8 @@ import ru.practicum.shareit.item.mapper.CommentMapper;
 import ru.practicum.shareit.item.mapper.ItemMapper;
 import ru.practicum.shareit.item.model.Comment;
 import ru.practicum.shareit.item.model.Item;
-import ru.practicum.shareit.item.validator.ItemValidator;
 import ru.practicum.shareit.user.dto.UserDto;
 import ru.practicum.shareit.user.service.UserService;
-import ru.practicum.shareit.util.Util;
 
 import java.time.LocalDateTime;
 import java.util.*;
@@ -49,7 +46,6 @@ public class ItemServiceImpl implements ItemService {
 
     @Override
     public ItemDto addItem(ItemDto itemDto, int userId) {
-        ItemValidator.validateItemDto(itemDto);
         checkOwner(userId);
         Item item = ItemMapper.toItemWithoutId(itemDto, userId);
         ItemDto result = ItemMapper.toItemDto(itemDao.save(item));
@@ -95,17 +91,12 @@ public class ItemServiceImpl implements ItemService {
     @Override
     public List<ItemDtoPers> findItemsByUserId(Integer from, Integer size, int userId) {
         List<Item> items;
-        if (Util.checkPagination(from, size)) {
-            Pageable pagebale = PageRequest.of(from > 0 ? from / size : 0, size);
 
-            items = itemDao.findAll(pagebale).stream().filter(item -> item.getOwnerId() == userId)
-                    .sorted(Comparator.comparingInt(Item::getId))
-                    .collect(Collectors.toList());
-        } else {
-            items = itemDao.findAll().stream().filter(item -> item.getOwnerId() == userId)
-                    .sorted(Comparator.comparingInt(Item::getId))
-                    .collect(Collectors.toList());
-        }
+        Pageable pagebale = PageRequest.of(from > 0 ? from / size : 0, size);
+
+        items = itemDao.findAll(pagebale).stream().filter(item -> item.getOwnerId() == userId)
+                .sorted(Comparator.comparingInt(Item::getId))
+                .collect(Collectors.toList());
 
         List<Integer> groupItemId = items.stream().map(Item::getId).collect(Collectors.toList());
 
@@ -129,28 +120,15 @@ public class ItemServiceImpl implements ItemService {
 
     @Override
     public List<ItemDto> searchItemsByText(Integer from, Integer size, String text) {
-        if (!StringUtils.hasText(text)) {
-            return Collections.emptyList();
-        }
-        if (Util.checkPagination(from, size)) {
             Pageable pagebale = PageRequest.of(from > 0 ? from / size : 0, size);
             return itemDao.findByNameContainingIgnoreCaseOrDescriptionContainingIgnoreCase(text, text, pagebale).stream()
                     .filter(Item::isAvailable)
                     .map(ItemMapper::toItemDto)
                     .collect(Collectors.toList());
-        }
-
-        return itemDao.findByNameContainingIgnoreCaseOrDescriptionContainingIgnoreCase(text, text).stream()
-                .filter(Item::isAvailable)
-                .map(ItemMapper::toItemDto)
-                .collect(Collectors.toList());
     }
 
     @Override
     public CommentDto addComment(int userId, int itemId, CommentDto text) {
-        if (!StringUtils.hasText(text.getText())) {
-            throw new ValidationException("Пустой комментарий");
-        }
         List<Booking> userBookings = bookingDao.findAllByBooker(userId);
         Optional<Booking> booking = userBookings.stream()
                 .filter(b -> b.getEnd().isBefore(LocalDateTime.now()))

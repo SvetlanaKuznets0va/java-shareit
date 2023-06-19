@@ -77,63 +77,6 @@ class ItemServiceImplUnitTest {
     }
 
     @Test
-    void shouldThrowValidationExceptionWhenAvailableIsNullInAddItem() {
-        ItemService itemService = new ItemServiceImpl(itemDao, bookingDao, commentDao, userService);
-        ItemDto itemDtoReq = new ItemDto(0, 1, "Item", "Item description", null, null);
-
-        assertThrows(ValidationException.class, () -> itemService.addItem(itemDtoReq, 1));
-    }
-
-    @Test
-    void shouldThrowValidationExceptionWhenNameIsNullInAddItem() {
-        ItemService itemService = new ItemServiceImpl(itemDao, bookingDao, commentDao, userService);
-        ItemDto itemDtoReq = new ItemDto(0, 1, null, "Item description", true, null);
-
-        assertThrows(ValidationException.class, () -> itemService.addItem(itemDtoReq, 1));
-    }
-
-    @Test
-    void shouldThrowValidationExceptionWhenNameIsEmptyInAddItem() {
-        ItemService itemService = new ItemServiceImpl(itemDao, bookingDao, commentDao, userService);
-        ItemDto itemDtoReq = new ItemDto(0, 1, "", "Item description", true, null);
-
-        assertThrows(ValidationException.class, () -> itemService.addItem(itemDtoReq, 1));
-    }
-
-    @Test
-    void shouldThrowValidationExceptionWhenNameIsSpaceInAddItem() {
-        ItemService itemService = new ItemServiceImpl(itemDao, bookingDao, commentDao, userService);
-        ItemDto itemDtoReq = new ItemDto(0, 1, " ", "Item description", true, null);
-
-        assertThrows(ValidationException.class, () -> itemService.addItem(itemDtoReq, 1));
-    }
-
-    @Test
-    void shouldThrowValidationExceptionWhenDescriptionIsEmptyInAddItem() {
-        ItemService itemService = new ItemServiceImpl(itemDao, bookingDao, commentDao, userService);
-        ItemDto itemDtoReq = new ItemDto(0, 1, "Item", "", true, null);
-
-        assertThrows(ValidationException.class, () -> itemService.addItem(itemDtoReq, 1));
-    }
-
-    @Test
-    void shouldThrowValidationExceptionWhenDescriptionIsNullInAddItem() {
-        ItemService itemService = new ItemServiceImpl(itemDao, bookingDao, commentDao, userService);
-        ItemDto itemDtoReq = new ItemDto(0, 1, "Item", null, true, null);
-
-        assertThrows(ValidationException.class, () -> itemService.addItem(itemDtoReq, 1));
-    }
-
-    @Test
-    void shouldThrowValidationExceptionWhenDescriptionIsSpaceInAddItem() {
-        ItemService itemService = new ItemServiceImpl(itemDao, bookingDao, commentDao, userService);
-        ItemDto itemDtoReq = new ItemDto(0, 1, "Item", " ", true, null);
-
-        assertThrows(ValidationException.class, () -> itemService.addItem(itemDtoReq, 1));
-    }
-
-
-    @Test
     void shouldUpdateItem() {
         ItemService itemService = new ItemServiceImpl(itemDao, bookingDao, commentDao, userService);
         Item itemAfter = new Item(1, 1, "Item2", "Item description2", true, null);
@@ -266,50 +209,6 @@ class ItemServiceImplUnitTest {
         assertThrows(NotFoundException.class, () -> itemService.findItemByIdAndUserId(1, 1));
     }
 
-
-    @Test
-    void shouldFindItemsByUserIdWithoutPagination() {
-        ItemService itemService = new ItemServiceImpl(itemDao, bookingDao, commentDao, userService);
-        Item item = new Item(1, 1, "item1", "item1", true, null);
-        User booker = new User(3, "op@pa.ru", "booker");
-        UserDto userComment = new UserDto(4, "po@ap.ru", "commentator");
-        List<Booking> lastBookings = new ArrayList<>();
-        lastBookings.add(new Booking(1, LocalDateTime.of(2023, 1, 1, 10, 15),
-                LocalDateTime.of(2023, 1, 5, 10, 15), item, booker, Status.APPROVED));
-        lastBookings.add(new Booking(2, LocalDateTime.of(2023, 1, 1, 11, 15),
-                LocalDateTime.of(2023, 1, 5, 10, 15), item, booker, Status.APPROVED));
-        List<Booking> nextBookings = new ArrayList<>();
-        nextBookings.add(new Booking(3, LocalDateTime.of(2023, 2, 1, 10, 15),
-                LocalDateTime.of(2024, 2, 5, 10, 15), item, booker, Status.WAITING));
-        nextBookings.add(new Booking(4, LocalDateTime.of(2023, 2, 1, 11, 15),
-                LocalDateTime.of(2024, 2, 5, 10, 15), item, booker, Status.WAITING));
-        Comment comment = new Comment(1, "comment", 1, 4,
-                LocalDateTime.of(2023, 1, 5, 10, 15));
-
-        Mockito.when(itemDao.findAll()).thenReturn(Collections.singletonList(item));
-        Mockito.when(bookingDao.findBookingWithLastNearestDateByItemId(Collections.singletonList(1)))
-                .thenReturn(lastBookings);
-        Mockito.when(bookingDao.findBookingWithNextNearestDateByItemId(Collections.singletonList(1)))
-                .thenReturn(nextBookings);
-        Mockito.when(commentDao.findCommentsByItemsId(Collections.singletonList(1)))
-                .thenReturn(Collections.singletonList(comment));
-        Mockito.when(userService.getAllUsers()).thenReturn(Collections.singletonList(userComment));
-
-        List<ItemDtoPers> result = itemService.findItemsByUserId(null, null, 1);
-
-        assertTrue(result.size() == 1);
-        assertTrue(result.get(0).getComments().size() == 1);
-        assertEquals(1, result.get(0).getId());
-        assertEquals(1, result.get(0).getOwnerId());
-        assertEquals("item1", result.get(0).getName());
-        assertEquals("item1", result.get(0).getDescription());
-        assertTrue(result.get(0).getAvailable());
-        assertTrue(result.get(0).getRequestId() == null);
-        assertEquals(1, result.get(0).getLastBooking().getId());
-        assertEquals(3, result.get(0).getNextBooking().getId());
-        assertEquals(1, result.get(0).getComments().get(0).getId());
-    }
-
     @Test
     void shouldFindItemsByUserIdWithPagination() {
         int from = 0;
@@ -353,24 +252,6 @@ class ItemServiceImplUnitTest {
     }
 
     @Test
-    void shouldSearchItemsByTextWithoutPagination() {
-        ItemService itemService = new ItemServiceImpl(itemDao, bookingDao, commentDao, userService);
-        Item item = new Item(1, 1, "item", "description", true, null);
-        Mockito.when(itemDao.findByNameContainingIgnoreCaseOrDescriptionContainingIgnoreCase("Item", "Item"))
-                .thenReturn(Collections.singletonList(item));
-
-        List<ItemDto> result = itemService.searchItemsByText(null, null, "Item");
-
-        assertTrue(result.size() == 1);
-        assertEquals(1, result.get(0).getId());
-        assertEquals(1, result.get(0).getOwnerId());
-        assertEquals("item", result.get(0).getName());
-        assertEquals("description", result.get(0).getDescription());
-        assertTrue(result.get(0).getAvailable());
-        assertTrue(result.get(0).getRequestId() == null);
-    }
-
-    @Test
     void shouldSearchItemsByTextWithPagination() {
         int from = 0;
         int size = 2;
@@ -392,31 +273,6 @@ class ItemServiceImplUnitTest {
         assertTrue(result.get(0).getAvailable());
         assertTrue(result.get(0).getRequestId() == null);
     }
-
-    @Test
-    void shouldReturnEmptyIfTextEmptyInSearchItemsByText() {
-        ItemService itemService = new ItemServiceImpl(itemDao, bookingDao, commentDao, userService);
-
-        List<ItemDto> result = itemService.searchItemsByText(null, null, "");
-        assertTrue(result.isEmpty());
-    }
-
-    @Test
-    void shouldReturnEmptyIfTextNullInSearchItemsByText() {
-        ItemService itemService = new ItemServiceImpl(itemDao, bookingDao, commentDao, userService);
-
-        List<ItemDto> result = itemService.searchItemsByText(null, null, null);
-        assertTrue(result.isEmpty());
-    }
-
-    @Test
-    void shouldReturnEmptyIfTextSpaceInSearchItemsByText() {
-        ItemService itemService = new ItemServiceImpl(itemDao, bookingDao, commentDao, userService);
-
-        List<ItemDto> result = itemService.searchItemsByText(null, null, " ");
-        assertTrue(result.isEmpty());
-    }
-
 
     @Test
     void shouldAddComment() {
