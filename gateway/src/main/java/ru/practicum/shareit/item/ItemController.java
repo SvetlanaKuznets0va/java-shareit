@@ -62,9 +62,9 @@ public class ItemController {
                                                     @PositiveOrZero @RequestParam(defaultValue = "0") Integer from,
                                                     @Positive @RequestParam(defaultValue = "100") Integer size) {
         log.info("Find items by text: {}", text);
-        if(!StringUtils.hasText(text)) {
-             return ResponseEntity.ok()
-                     .body(Collections.emptyList());
+        if (!StringUtils.hasText(text)) {
+            return ResponseEntity.ok()
+                    .body(Collections.emptyList());
         }
         return itemClient.searchItemsByText(from, size, text);
     }

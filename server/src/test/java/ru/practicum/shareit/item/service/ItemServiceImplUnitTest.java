@@ -217,21 +217,28 @@ class ItemServiceImplUnitTest {
         Item item = new Item(1, 1, "item1", "item1", true, null);
         User booker = new User(3, "op@pa.ru", "booker");
         UserDto userComment = new UserDto(4, "po@ap.ru", "commentator");
-        Booking lastBooking = new Booking(1, LocalDateTime.of(2023, 1, 1, 10, 15),
-                LocalDateTime.of(2023, 1, 5, 10, 15), item, booker, Status.APPROVED);
-        Booking nextBooking = new Booking(2, LocalDateTime.of(2023, 2, 1, 10, 15),
-                LocalDateTime.of(2024, 2, 5, 10, 15), item, booker, Status.WAITING);
+        List<Booking> lastBookings = new ArrayList<>();
+        lastBookings.add(new Booking(1, LocalDateTime.of(2023, 1, 1, 10, 15),
+                LocalDateTime.of(2023, 1, 5, 10, 15), item, booker, Status.APPROVED));
+        lastBookings.add(new Booking(2, LocalDateTime.of(2023, 1, 1, 11, 15),
+                LocalDateTime.of(2023, 1, 5, 10, 15), item, booker, Status.APPROVED));
+        List<Booking> nextBookings = new ArrayList<>();
+        nextBookings.add(new Booking(3, LocalDateTime.of(2023, 2, 1, 10, 15),
+                LocalDateTime.of(2024, 2, 5, 10, 15), item, booker, Status.WAITING));
+        nextBookings.add(new Booking(4, LocalDateTime.of(2023, 2, 1, 11, 15),
+                LocalDateTime.of(2024, 2, 5, 10, 15), item, booker, Status.WAITING));
         Comment comment = new Comment(1, "comment", 1, 4,
                 LocalDateTime.of(2023, 1, 5, 10, 15));
+
 
         Pageable pagebale = PageRequest.of(from > 0 ? from / size : 0, size);
         Page<Item> pages = new PageImpl<>(Collections.singletonList(item), pagebale, Collections.singletonList(item).size());
 
         Mockito.when(itemDao.findAll(pagebale)).thenReturn(pages);
         Mockito.when(bookingDao.findBookingWithLastNearestDateByItemId(Collections.singletonList(1)))
-                .thenReturn(Collections.singletonList(lastBooking));
+                .thenReturn(lastBookings);
         Mockito.when(bookingDao.findBookingWithNextNearestDateByItemId(Collections.singletonList(1)))
-                .thenReturn(Collections.singletonList(nextBooking));
+                .thenReturn(nextBookings);
         Mockito.when(commentDao.findCommentsByItemsId(Collections.singletonList(1)))
                 .thenReturn(Collections.singletonList(comment));
         Mockito.when(userService.getAllUsers()).thenReturn(Collections.singletonList(userComment));
@@ -247,7 +254,7 @@ class ItemServiceImplUnitTest {
         assertTrue(result.get(0).getAvailable());
         assertTrue(result.get(0).getRequestId() == null);
         assertEquals(1, result.get(0).getLastBooking().getId());
-        assertEquals(2, result.get(0).getNextBooking().getId());
+        assertEquals(3, result.get(0).getNextBooking().getId());
         assertEquals(1, result.get(0).getComments().get(0).getId());
     }
 

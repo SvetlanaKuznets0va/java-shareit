@@ -60,7 +60,7 @@ public class BookingController {
 
         Optional<BookingState> state = BookingState.from(stateParam);
 
-        if(state.isEmpty()) {
+        if (state.isEmpty()) {
             return ResponseEntity.badRequest()
                     .body(Map.of("error", "Unknown state: UNSUPPORTED_STATUS"));
         }
@@ -75,7 +75,7 @@ public class BookingController {
                                                  @Positive @RequestParam(defaultValue = "100") Integer size) {
         Optional<BookingState> state = BookingState.from(stateParam);
 
-        if(state.isEmpty()) {
+        if (state.isEmpty()) {
             return ResponseEntity.badRequest()
                     .body(Map.of("error", "Unknown state: UNSUPPORTED_STATUS"));
         }
