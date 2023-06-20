@@ -17,7 +17,7 @@ import javax.validation.constraints.Size;
 
 import java.util.Collections;
 
-import static ru.practicum.shareit.booking.constants.Constatnts.USER_ID;
+import static ru.practicum.shareit.constants.Constatnts.USER_ID;
 
 @Controller
 @RequestMapping(path = "/items")

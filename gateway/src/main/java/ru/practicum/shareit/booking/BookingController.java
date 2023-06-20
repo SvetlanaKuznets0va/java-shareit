@@ -16,7 +16,7 @@ import java.time.LocalDateTime;
 import java.util.Map;
 import java.util.Optional;
 
-import static ru.practicum.shareit.booking.constants.Constatnts.USER_ID;
+import static ru.practicum.shareit.constants.Constatnts.USER_ID;
 
 @Controller
 @RequestMapping(path = "/bookings")

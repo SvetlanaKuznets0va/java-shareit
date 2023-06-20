@@ -15,9 +15,7 @@ import ru.practicum.shareit.request.dto.ItemRequestDto;
 import ru.practicum.shareit.request.dto.ItemRequestRespDto;
 import ru.practicum.shareit.request.mapper.ItemRequestMapper;
 import ru.practicum.shareit.request.model.ItemRequest;
-import ru.practicum.shareit.request.validator.ItemRequestValidator;
 import ru.practicum.shareit.user.service.UserService;
-import ru.practicum.shareit.util.Util;
 
 import java.time.LocalDateTime;
 import java.util.Collections;
@@ -42,7 +40,6 @@ public class ItemRequestServiceImpl implements ItemRequestService {
     @Override
     public ItemRequestDto addItemRequest(ItemRequestDto itemRequestDto, int userId) {
         checkUser(userId);
-        ItemRequestValidator.validateItemRequestDto(itemRequestDto);
         ItemRequest ir = ItemRequestMapper.toItemRequest(itemRequestDto, userId);
         ir.setCreated(LocalDateTime.now());
         ItemRequestDto ird = ItemRequestMapper.toItemRequestDto(itemRequestDao.save(ir));
@@ -72,10 +69,6 @@ public class ItemRequestServiceImpl implements ItemRequestService {
 
     @Override
     public List<ItemRequestRespDto> getAllItemRequests(Integer from, Integer size, int userId) {
-        if (!Util.checkPagination(from, size)) {
-            return Collections.emptyList();
-        }
-
         Pageable pagebale = PageRequest.of(from > 0 ? from / size : 0, size, Sort.by("created").descending());
         List<Item> items = itemDao.findAll();
 

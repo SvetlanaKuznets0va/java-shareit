@@ -7,7 +7,6 @@ import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.*;
 import ru.practicum.shareit.exception.NotFoundException;
-import ru.practicum.shareit.exception.ValidationException;
 import ru.practicum.shareit.item.dao.ItemDao;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.request.dao.ItemRequestDao;
@@ -37,7 +36,6 @@ class ItemRequestServiceImplUnitTest {
 
     LocalDateTime created = LocalDateTime.now();
 
-
     @Test
     void shouldAddItemRequest() {
         ItemRequestDto itemRequestDto = new ItemRequestDto(0, "description", null);
@@ -63,25 +61,6 @@ class ItemRequestServiceImplUnitTest {
 
         assertThrows(NotFoundException.class, () -> service.addItemRequest(itemRequestDto, 1), "Такого владельца нет");
     }
-
-    @Test
-    void shouldThrowValidationExceptionWhenDescriptionIsEmpty() {
-        ItemRequestDto itemRequestDto = new ItemRequestDto(0, "", null);
-        ItemRequestServiceImpl service = new ItemRequestServiceImpl(mockUserService, mockItemRequestDao, mockItemDao);
-        Mockito.when(mockUserService.isExist(1)).thenReturn(true);
-
-        assertThrows(ValidationException.class, () -> service.addItemRequest(itemRequestDto, 1));
-    }
-
-    @Test
-    void shouldThrowValidationExceptionWhenDescriptionIsNull() {
-        ItemRequestDto itemRequestDto = new ItemRequestDto(0, null, null);
-        ItemRequestServiceImpl service = new ItemRequestServiceImpl(mockUserService, mockItemRequestDao, mockItemDao);
-        Mockito.when(mockUserService.isExist(1)).thenReturn(true);
-
-        assertThrows(ValidationException.class, () -> service.addItemRequest(itemRequestDto, 1));
-    }
-
 
     @Test
     void shouldReturnOwnItemRequests() {
