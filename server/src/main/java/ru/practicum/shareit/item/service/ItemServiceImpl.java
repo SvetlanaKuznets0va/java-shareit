@@ -95,6 +95,7 @@ public class ItemServiceImpl implements ItemService {
         Pageable pagebale = PageRequest.of(from > 0 ? from / size : 0, size);
 
         items = itemDao.findAll(pagebale).stream().filter(item -> item.getOwnerId() == userId)
+                .sorted(Comparator.comparingInt(Item::getId))
                 .collect(Collectors.toList());
 
         List<Integer> groupItemId = items.stream().map(Item::getId).collect(Collectors.toList());
